@@ -1,0 +1,21 @@
+[
+  {
+    "id": "desk-phone-stand-01",
+    "name": "Minimalist Smartphone Stand",
+    "price": 12.50,
+    "material": "PLA Basic",
+    "description": "Durable and lightweight desk stand, 3D printed in white PLA Basic.",
+    "image": "https://via.placeholder.com/300",
+    "url": "https://[YOUR_GITHUB_USERNAME].github.io/brandilab-shop/"
+  },
+  {
+    "id": "flexi-dragon-02",
+    "name": "Articulated Flexi Dragon",
+    "price": 25.00,
+    "material": "TPU",
+    "description": "Fully articulated decorative dragon model.",
+    "image": "https://via.placeholder.com/300",
+    "url": "https://[YOUR_GITHUB_USERNAME].github.io/brandilab-shop/"
+  }
+]
+
