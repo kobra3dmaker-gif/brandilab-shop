@@ -65,6 +65,7 @@ const recommendedProducts = computed(() => {
               class="snipcart-add-item btn btn-add"
               :data-item-id="product.id"
               :data-item-price="product.price"
+              :data-item-url="`/product/${product.id}`"
               :data-item-description="product.description"
               :data-item-image="product.image"
               :data-item-name="product.name"

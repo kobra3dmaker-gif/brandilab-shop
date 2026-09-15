@@ -15,7 +15,6 @@
     <div class="card-actions">
       <button
         class="snipcart-add-item add-to-cart-btn"
-        @click.prevent.stop
         :data-item-id="product.id"
         :data-item-price="product.price"
         :data-item-url="`/product/${product.id}`"
