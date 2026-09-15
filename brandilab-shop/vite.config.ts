@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/brandilab-shop/', // MUST match your GitHub repo name exactly
+  base: '/', // MUST match your GitHub repo name exactly
   plugins: [
     vue(),
     vueDevTools(),
