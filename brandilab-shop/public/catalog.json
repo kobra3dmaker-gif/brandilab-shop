@@ -3,19 +3,66 @@
     "id": "desk-phone-stand-01",
     "name": "Minimalist Smartphone Stand",
     "price": 12.50,
-    "material": "PLA Basic",
-    "description": "Durable and lightweight desk stand, 3D printed in white PLA Basic.",
-    "image": "https://via.placeholder.com/300",
-    "url": "https://[YOUR_GITHUB_USERNAME].github.io/brandilab-shop/"
+    "material": "PLA",
+    "description": "A sleek and durable desk stand for your smartphone. 3D printed in premium PLA with a clean, minimalist design that complements any workspace.",
+    "image": "https://placehold.co/600x600/e8f5e9/2d3436?text=Phone+Stand",
+    "url": "/",
+    "category": "Accessories",
+    "featured": true
   },
   {
     "id": "flexi-dragon-02",
     "name": "Articulated Flexi Dragon",
     "price": 25.00,
     "material": "TPU",
-    "description": "Fully articulated decorative dragon model.",
-    "image": "https://via.placeholder.com/300",
-    "url": "https://[YOUR_GITHUB_USERNAME].github.io/brandilab-shop/"
+    "description": "A fully articulated decorative dragon with flexible joints. Printed in soft TPU material for smooth, satisfying movement.",
+    "image": "https://placehold.co/600x600/e3f2fd/2d3436?text=Flexi+Dragon",
+    "url": "/",
+    "category": "Decorative",
+    "featured": true
+  },
+  {
+    "id": "geometric-planter-03",
+    "name": "Geometric Planter Pot",
+    "price": 18.00,
+    "material": "PETG",
+    "description": "Modern geometric planter with integrated drainage. Made from water-resistant PETG, perfect for succulents and small plants.",
+    "image": "https://placehold.co/600x600/fce4ec/2d3436?text=Planter+Pot",
+    "url": "/",
+    "category": "Home & Garden",
+    "featured": true
+  },
+  {
+    "id": "desk-organizer-04",
+    "name": "Modular Desk Organizer",
+    "price": 22.00,
+    "material": "PLA",
+    "description": "Keep your desk tidy with this modular organizer. Features compartments for pens, cards, and small items. Stackable and customizable.",
+    "image": "https://placehold.co/600x600/f3e5f5/2d3436?text=Desk+Organizer",
+    "url": "/",
+    "category": "Accessories",
+    "featured": true
+  },
+  {
+    "id": "coaster-set-05",
+    "name": "Textured Coaster Set (4-Pack)",
+    "price": 15.00,
+    "material": "PETG",
+    "description": "Set of 4 unique textured coasters with anti-slip base. Each features a different geometric pattern. Heat-resistant PETG material.",
+    "image": "https://placehold.co/600x600/fff3e0/2d3436?text=Coaster+Set",
+    "url": "/",
+    "category": "Home & Garden",
+    "featured": false
+  },
+  {
+    "id": "lithophane-lamp-06",
+    "name": "Custom Lithophane Night Lamp",
+    "price": 35.00,
+    "material": "PLA",
+    "description": "A beautiful lithophane night lamp that reveals a hidden image when illuminated. Includes LED base. Perfect as a personalized gift.",
+    "image": "https://placehold.co/600x600/e8eaf6/2d3436?text=Night+Lamp",
+    "url": "/",
+    "category": "Decorative",
+    "featured": false
   }
 ]
-
