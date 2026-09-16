@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Order {
-  [key: string]: string | boolean | undefined
+  [key: string]: any
 }
 
 const router = useRouter()
@@ -23,7 +23,7 @@ function parseDate(dateStr: string): number {
   if (!dateStr) return 0
   const parts = dateStr.split('/')
   if (parts.length === 3) {
-    const [day, month, year] = parts.map(Number)
+    const [day, month, year] = parts.map(Number) as [number, number, number]
     return new Date(year, month - 1, day).getTime()
   }
   // Fallback: let Date try to parse it
@@ -97,7 +97,7 @@ const markAsShipped = async (order: Order) => {
     order['Stato'] = 'Spedito'
   } catch (error) {
     console.error('Error updating order:', error)
-    alert('Failed to update the order.')
+    alert('Impossibile aggiornare l\'ordine.')
   } finally {
     order.isUpdating = false
   }
@@ -118,25 +118,25 @@ function logout() {
         <div class="header-left">
           <div class="header-badge">Admin</div>
           <div>
-            <h1 class="header-title">Order Management</h1>
+            <h1 class="header-title">Gestione Ordini</h1>
             <p class="header-sub">BrandiLab — Dashboard</p>
           </div>
         </div>
-        <button class="btn-logout" @click="logout" title="Logout">
+        <button class="btn-logout" @click="logout" title="Esci">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          <span>Logout</span>
-          <span class="logout-text">Logout</span>
+          <span>Esci</span>
+          <span class="logout-text">Esci</span>
         </button>
       </header>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="state-card">
         <div class="spinner" />
-        <p>Loading orders…</p>
+        <p>Caricamento ordini…</p>
       </div>
 
       <!-- Error State -->
@@ -144,7 +144,7 @@ function logout() {
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="1.5">
           <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
-        <p>Failed to load orders. Check your connection and reload.</p>
+        <p>Impossibile caricare gli ordini. Controlla la tua connessione e ricarica.</p>
       </div>
 
       <template v-else>
@@ -159,7 +159,7 @@ function logout() {
             </div>
             <div class="stat-body">
               <span class="stat-number">{{ totalOrders }}</span>
-              <span class="stat-label">Total Orders</span>
+              <span class="stat-label">Ordini Totali</span>
             </div>
           </div>
 
@@ -171,7 +171,7 @@ function logout() {
             </div>
             <div class="stat-body">
               <span class="stat-number">{{ pendingOrders }}</span>
-              <span class="stat-label">Pending</span>
+              <span class="stat-label">Da Spedire</span>
             </div>
           </div>
 
@@ -183,7 +183,7 @@ function logout() {
             </div>
             <div class="stat-body">
               <span class="stat-number">{{ shippedOrders }}</span>
-              <span class="stat-label">Shipped</span>
+              <span class="stat-label">Spediti</span>
             </div>
           </div>
 
@@ -209,7 +209,7 @@ function logout() {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search product, buyer, platform…"
+              placeholder="Cerca prodotto, acquirente, piattaforma…"
               class="search-input"
             />
           </div>
@@ -219,21 +219,21 @@ function logout() {
               :class="{ active: statusFilter === 'all' }"
               @click="statusFilter = 'all'"
             >
-              All <span class="tab-count">{{ totalOrders }}</span>
+              Tutti <span class="tab-count">{{ totalOrders }}</span>
             </button>
             <button
               class="filter-tab"
               :class="{ active: statusFilter === 'pending' }"
               @click="statusFilter = 'pending'"
             >
-              Pending <span class="tab-count">{{ pendingOrders }}</span>
+              Da Spedire <span class="tab-count">{{ pendingOrders }}</span>
             </button>
             <button
               class="filter-tab"
               :class="{ active: statusFilter === 'shipped' }"
               @click="statusFilter = 'shipped'"
             >
-              Shipped <span class="tab-count">{{ shippedOrders }}</span>
+              Spediti <span class="tab-count">{{ shippedOrders }}</span>
             </button>
           </div>
         </section>
@@ -244,12 +244,12 @@ function logout() {
             <table class="orders-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Platform</th>
-                  <th>Product</th>
-                  <th>Buyer</th>
-                  <th>Status</th>
-                  <th class="th-action">Action</th>
+                  <th>Data</th>
+                  <th>Piattaforma</th>
+                  <th>Prodotto</th>
+                  <th>Acquirente</th>
+                  <th>Stato</th>
+                  <th class="th-action">Azione</th>
                 </tr>
               </thead>
               <tbody>
@@ -285,14 +285,14 @@ function logout() {
                     >
                       <template v-if="order.isUpdating">
                         <span class="btn-spinner" />
-                        Updating…
+                        Aggiornamento…
                       </template>
                       <template v-else-if="order['Stato'] === 'Spedito'">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Done
+                        Fatto
                       </template>
                       <template v-else>
-                        Mark Shipped
+                        Segna Spedito
                       </template>
                     </button>
                   </td>
@@ -328,15 +328,15 @@ function logout() {
             <!-- Card Body -->
             <div class="card-details">
               <div class="card-detail">
-                <span class="card-label">Platform</span>
+                <span class="card-label">Piattaforma</span>
                 <span class="platform-tag">{{ order['Piattaforma'] }}</span>
               </div>
               <div class="card-detail">
-                <span class="card-label">Buyer</span>
+                <span class="card-label">Acquirente</span>
                 <span class="card-value">{{ order['Username Vinted'] }}</span>
               </div>
               <div class="card-detail" v-if="order['Prezzo']">
-                <span class="card-label">Price</span>
+                <span class="card-label">Prezzo</span>
                 <span class="card-value card-price">{{ order['Prezzo'] }}</span>
               </div>
             </div>
@@ -353,14 +353,14 @@ function logout() {
             >
               <template v-if="order.isUpdating">
                 <span class="btn-spinner" />
-                Updating…
+                Aggiornamento…
               </template>
               <template v-else-if="order['Stato'] === 'Spedito'">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Completed
+                Completato
               </template>
               <template v-else>
-                Mark as Shipped ✓
+                Segna come Spedito ✓
               </template>
             </button>
           </div>
@@ -371,12 +371,12 @@ function logout() {
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <p>No orders match your filters.</p>
+          <p>Nessun ordine corrisponde ai tuoi filtri.</p>
         </div>
 
         <!-- Footer -->
         <footer class="admin-footer">
-          <p>Showing {{ filteredOrders.length }} of {{ totalOrders }} orders</p>
+          <p>Mostrati {{ filteredOrders.length }} di {{ totalOrders }} ordini</p>
         </footer>
       </template>
     </div>
