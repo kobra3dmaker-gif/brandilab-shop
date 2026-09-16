@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue';
 const orders = ref<any[]>([]);
 const isLoading = ref(true);
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyoabX_NApRnMiAIG6tXyY9mh-X2ckH5egpfdI4WrM9J6J6TwHE9dkVRw3OHIYPvRnuRw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyvAt8zC9JEYrxesSDssEKfYdUufND9jHfU9MzNypeMAKzIN4bMB9Z-T78r9xMgx-flmQ/exec';
 const API_TOKEN = 'BrandiLab_Admin_99xK2pL5_2026!';
 
 onMounted(async () => {
