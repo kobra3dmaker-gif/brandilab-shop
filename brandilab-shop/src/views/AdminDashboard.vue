@@ -125,6 +125,7 @@ function logout() {
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
           <span>Logout</span>
+          <span class="logout-text">Logout</span>
         </button>
       </header>
 
@@ -205,6 +206,7 @@ function logout() {
               v-model="searchQuery"
               type="text"
               placeholder="Search by product, buyer or platform…"
+              placeholder="Search product, buyer, platform…"
               class="search-input"
             />
           </div>
@@ -235,6 +237,8 @@ function logout() {
 
         <!-- Orders Table -->
         <section class="table-panel">
+        <!-- Desktop: Orders Table -->
+        <section class="table-panel desktop-only">
           <div class="table-wrapper">
             <table class="orders-table">
               <thead>
@@ -251,6 +255,7 @@ function logout() {
                 <tr
                   v-for="(order, index) in filteredOrders"
                   :key="index"
+                  :key="'t-' + index"
                   :class="{ 'row-shipped': order['Stato'] === 'Spedito' }"
                 >
                   <td class="cell-date">{{ order['Data'] }}</td>
@@ -295,6 +300,7 @@ function logout() {
               </tbody>
             </table>
           </div>
+        </section>
 
           <!-- Empty State -->
           <div v-if="filteredOrders.length === 0" class="empty-state">
@@ -302,8 +308,77 @@ function logout() {
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <p>No orders match your filters.</p>
+        <!-- Mobile: Order Cards -->
+        <section class="cards-list mobile-only">
+          <div
+            v-for="(order, index) in filteredOrders"
+            :key="'c-' + index"
+            class="order-card"
+            :class="{ 'card-shipped': order['Stato'] === 'Spedito' }"
+          >
+            <!-- Card Header -->
+            <div class="card-header">
+              <div class="card-header-left">
+                <span class="card-product">{{ order['Prodotto'] }}</span>
+                <span class="card-date">{{ order['Data'] }}</span>
+              </div>
+              <span
+                class="status-pill"
+                :class="order['Stato'] === 'Spedito' ? 'status-shipped' : 'status-pending'"
+              >
+                <span class="status-dot" />
+                {{ order['Stato'] || 'Da spedire' }}
+              </span>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-details">
+              <div class="card-detail">
+                <span class="card-label">Platform</span>
+                <span class="platform-tag">{{ order['Piattaforma'] }}</span>
+              </div>
+              <div class="card-detail">
+                <span class="card-label">Buyer</span>
+                <span class="card-value">{{ order['Username Vinted'] }}</span>
+              </div>
+              <div class="card-detail" v-if="order['Prezzo']">
+                <span class="card-label">Price</span>
+                <span class="card-value card-price">{{ order['Prezzo'] }}</span>
+              </div>
+            </div>
+
+            <!-- Card Action -->
+            <button
+              class="action-btn card-action-btn"
+              :class="{
+                'action-done': order['Stato'] === 'Spedito',
+                'action-loading': order.isUpdating,
+              }"
+              :disabled="order['Stato'] === 'Spedito' || order.isUpdating"
+              @click="markAsShipped(order)"
+            >
+              <template v-if="order.isUpdating">
+                <span class="btn-spinner" />
+                Updating…
+              </template>
+              <template v-else-if="order['Stato'] === 'Spedito'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Completed
+              </template>
+              <template v-else>
+                Mark as Shipped ✓
+              </template>
+            </button>
           </div>
         </section>
+
+        <!-- Empty State (shared) -->
+        <div v-if="filteredOrders.length === 0" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p>No orders match your filters.</p>
+        </div>
 
         <!-- Footer -->
         <footer class="admin-footer">
@@ -325,6 +400,11 @@ function logout() {
 .admin-container {
   max-width: 1100px;
   margin: 0 auto;
+}
+
+/* ===== Visibility toggles ===== */
+.mobile-only {
+  display: none;
 }
 
 /* ===== Header ===== */
@@ -591,6 +671,7 @@ function logout() {
 }
 
 /* ===== Table ===== */
+/* ===== Desktop Table ===== */
 .table-panel {
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -680,6 +761,7 @@ function logout() {
 }
 
 /* Status */
+/* ===== Status Pill (shared desktop + mobile) ===== */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -716,6 +798,7 @@ function logout() {
 }
 
 /* Action Button */
+/* ===== Action Button (shared) ===== */
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -762,6 +845,95 @@ function logout() {
 }
 
 /* Empty */
+/* ===== Mobile Order Cards ===== */
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.order-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.1rem;
+  transition: var(--transition-fast);
+}
+
+.card-shipped {
+  opacity: 0.55;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.card-product {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.card-date {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.card-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.card-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.card-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.card-price {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.card-action-btn {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* ===== Empty ===== */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -773,6 +945,7 @@ function logout() {
 }
 
 /* Footer */
+/* ===== Footer ===== */
 .admin-footer {
   text-align: center;
   padding: 1.25rem 0 0;
@@ -788,39 +961,133 @@ function logout() {
 }
 
 @media (max-width: 640px) {
-  .admin-page {
-    padding: 1.25rem 0.75rem 3rem;
+@media (max-width: 680px) {
+  /* Switch from table to cards */
+  .desktop-only {
+    display: none;
   }
 
+  .mobile-only {
+    display: flex;
+  }
+
+  .admin-page {
+    padding: 1.25rem 0.75rem 3rem;
+    padding: 1rem 0.75rem 3rem;
+  }
+
+  .admin-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .header-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    font-size: 0.6rem;
+  }
+
+  .header-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .header-sub {
+    font-size: var(--font-size-xs);
+  }
+
+  .btn-logout {
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .logout-text {
+    display: none;
+  }
+
+  /* Stats: compact 2x2 */
   .stats-row {
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
   }
 
   .stat-card {
     padding: 1rem;
+    padding: 0.85rem;
+    gap: 0.65rem;
   }
 
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-number {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Toolbar: stack vertically */
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
   }
 
   .search-box {
     max-width: 100%;
+    min-width: 0;
+  }
+
+  .search-input {
+    padding: 0.7rem 0.75rem 0.7rem 2.4rem;
+    font-size: var(--font-size-base);
   }
 
   .filter-tabs {
-    justify-content: center;
+    justify-content: stretch;
   }
+
+  .filter-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 0.5rem 0.4rem;
+    font-size: var(--font-size-xs);
+  }
+}
 
   .orders-table th,
   .orders-table td {
     padding: 0.7rem 0.65rem;
+@media (max-width: 380px) {
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .header-badge {
     display: none;
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stat-icon svg {
+    width: 16px;
+    height: 16px;
   }
 }
 </style>
