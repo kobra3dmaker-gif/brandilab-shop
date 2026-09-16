@@ -2,9 +2,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+interface Order {
+  [key: string]: string | boolean | undefined
+}
+
 const router = useRouter()
 
-const orders = ref<any[]>([])
+const orders = ref<Order[]>([])
 const isLoading = ref(true)
 const hasError = ref(false)
 const searchQuery = ref('')
@@ -31,8 +35,8 @@ onMounted(async () => {
   try {
     const response = await fetch(`${API_URL}?token=${API_TOKEN}`)
     const data = await response.json()
-    orders.value = data.sort((a: any, b: any) => {
-      return parseDate(b['Data']) - parseDate(a['Data'])
+    orders.value = data.sort((a: Order, b: Order) => {
+      return parseDate(String(b['Data'] ?? '')) - parseDate(String(a['Data'] ?? ''))
     })
   } catch (error) {
     console.error('Failed to fetch orders:', error)
@@ -77,7 +81,7 @@ const filteredOrders = computed(() => {
   return result
 })
 
-const markAsShipped = async (order: any) => {
+const markAsShipped = async (order: Order) => {
   order.isUpdating = true
   try {
     await fetch(API_URL, {
@@ -205,7 +209,6 @@ function logout() {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search by product, buyer or platform…"
               placeholder="Search product, buyer, platform…"
               class="search-input"
             />
@@ -235,8 +238,6 @@ function logout() {
           </div>
         </section>
 
-        <!-- Orders Table -->
-        <section class="table-panel">
         <!-- Desktop: Orders Table -->
         <section class="table-panel desktop-only">
           <div class="table-wrapper">
@@ -254,7 +255,6 @@ function logout() {
               <tbody>
                 <tr
                   v-for="(order, index) in filteredOrders"
-                  :key="index"
                   :key="'t-' + index"
                   :class="{ 'row-shipped': order['Stato'] === 'Spedito' }"
                 >
@@ -302,12 +302,6 @@ function logout() {
           </div>
         </section>
 
-          <!-- Empty State -->
-          <div v-if="filteredOrders.length === 0" class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <p>No orders match your filters.</p>
         <!-- Mobile: Order Cards -->
         <section class="cards-list mobile-only">
           <div
@@ -960,7 +954,6 @@ function logout() {
   }
 }
 
-@media (max-width: 640px) {
 @media (max-width: 680px) {
   /* Switch from table to cards */
   .desktop-only {
@@ -972,7 +965,6 @@ function logout() {
   }
 
   .admin-page {
-    padding: 1.25rem 0.75rem 3rem;
     padding: 1rem 0.75rem 3rem;
   }
 
@@ -1007,13 +999,11 @@ function logout() {
   /* Stats: compact 2x2 */
   .stats-row {
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
     gap: 0.6rem;
     margin-bottom: 1rem;
   }
 
   .stat-card {
-    padding: 1rem;
     padding: 0.85rem;
     gap: 0.65rem;
   }
@@ -1062,17 +1052,12 @@ function logout() {
   }
 }
 
-  .orders-table th,
-  .orders-table td {
-    padding: 0.7rem 0.65rem;
 @media (max-width: 380px) {
   .stats-row {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
   }
 
-  .header-badge {
-    display: none;
   .stat-card {
     flex-direction: column;
     align-items: flex-start;
