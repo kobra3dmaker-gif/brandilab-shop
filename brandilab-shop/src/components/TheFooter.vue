@@ -31,7 +31,7 @@
         <div class="footer-col">
           <h4 class="col-title">Contact</h4>
           <address class="footer-address">
-            <p>Email: <a href="mailto:info@brandilab.it">info@brandilab.it</a></p>
+            <p>Email: <a href="mailto:brandilab@pecsicura.com">brandilab@pecsicura.com</a></p>
             <p>Location: Italy</p>
           </address>
         </div>
