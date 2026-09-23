@@ -38,7 +38,7 @@ const editOrderField = async (order: Order, fieldName: string, event: Event) => 
 
   // Salviamo le chiavi originali nel caso in cui stessimo modificando proprio l'username o la data
   const oldDate = order['Data'];
-  const oldUsername = order['Username Vinted'];
+  const oldUsername = order['Acquirente'];
 
   order[fieldName] = newValue;
   order.isUpdating = true;
@@ -161,7 +161,7 @@ const filteredOrders = computed(() => {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(o =>
       (o['Prodotto'] || '').toLowerCase().includes(q) ||
-      (o['Username Vinted'] || '').toLowerCase().includes(q) ||
+      (o['Acquirente'] || '').toLowerCase().includes(q) ||
       (o['Piattaforma'] || '').toLowerCase().includes(q) ||
       (o['Assegnato a'] || '').toLowerCase().includes(q)
     )
@@ -178,7 +178,7 @@ const updateField = async (order: Order, fieldName: string, event: Event) => {
   if (newValue === originalValue) return
 
   const oldDate = fieldName === 'Data' ? originalValue : order['Data']
-  const oldUsername = fieldName === 'Username Vinted' ? originalValue : order['Username Vinted']
+  const oldUsername = fieldName === 'Acquirente' ? originalValue : order['Acquirente']
 
   order[fieldName] = newValue
   order.isUpdating = true
@@ -217,7 +217,7 @@ const updateField = async (order: Order, fieldName: string, event: Event) => {
 }
 
 const deleteOrder = async (order: Order) => {
-  if (!confirm(`Sei sicuro di voler eliminare l'ordine di ${order['Username Vinted']}? L'azione è irreversibile.`)) {
+  if (!confirm(`Sei sicuro di voler eliminare l'ordine di ${order['Acquirente']}? L'azione è irreversibile.`)) {
     return
   }
 
@@ -231,7 +231,7 @@ const deleteOrder = async (order: Order) => {
         token: API_TOKEN,
         action: 'deleteOrder',
         date: order['Data'],
-        username: order['Username Vinted'],
+        username: order['Acquirente'],
       }),
     })
 
@@ -268,7 +268,7 @@ const uploadPDF = (order: Order, event: Event) => {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64Data = (e.target?.result as string).split(',')[1];
-    const fileName = `Ordine_${order['Username Vinted']}_${Date.now()}.pdf`;
+    const fileName = `Ordine_${order['Acquirente']}_${Date.now()}.pdf`;
 
     try {
       // Tolto mode: 'no-cors' in modo da poter leggere il fileId o i veri messaggi di errore
@@ -281,7 +281,7 @@ const uploadPDF = (order: Order, event: Event) => {
           token: API_TOKEN,
           action: 'uploadPDF',
           date: order['Data'],
-          username: order['Username Vinted'],
+          username: order['Acquirente'],
           fileName: fileName,
           base64Data: base64Data
         })
@@ -321,7 +321,7 @@ const deletePDF = async (order: Order) => {
         token: API_TOKEN,
         action: 'deletePDF',
         date: order['Data'],
-        username: order['Username Vinted']
+        username: order['Acquirente']
       })
     });
     order['PDF'] = ""; 
@@ -389,7 +389,7 @@ const bulkMarkAsShipped = async () => {
           token: API_TOKEN,
           action: 'updateField',
           date: order['Data'],
-          username: order['Username Vinted'],
+          username: order['Acquirente'],
           field: 'Stato',
           value: 'Spedito',
         }),
@@ -422,7 +422,7 @@ const bulkDeleteOrders = async () => {
           token: API_TOKEN,
           action: 'deleteOrder',
           date: order['Data'],
-          username: order['Username Vinted'],
+          username: order['Acquirente'],
         }),
       })
     }
@@ -708,8 +708,8 @@ function logout() {
                     <input 
                       type="text" 
                       class="editable-input"
-                      :value="order['Username Vinted']" 
-                      @blur="updateField(order, 'Username Vinted', $event)" 
+                      :value="order['Acquirente']" 
+                      @blur="updateField(order, 'Acquirente', $event)" 
                       title="Clicca fuori per salvare"
                     />
                   </td>
@@ -887,8 +887,8 @@ function logout() {
                 <input 
                   type="text" 
                   class="card-value editable-input"
-                  :value="order['Username Vinted']" 
-                  @blur="updateField(order, 'Username Vinted', $event)" 
+                  :value="order['Acquirente']" 
+                  @blur="updateField(order, 'Acquirente', $event)" 
                   title="Clicca fuori per salvare"
                 />
               </div>
