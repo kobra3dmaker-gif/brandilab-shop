@@ -18,6 +18,88 @@ const SCRIPT_ID = 'AKfycbwehSYdNkby0CX1oFUw7P3_7MmEctZw7CsxRVakYpM13HN4m8P0YwrZv
 const API_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`
 const API_TOKEN = 'BrandiLab_Admin_99xK2pL5_2026!'
 
+// Stato per il modale di inserimento manuale
+const showAddModal = ref(false)
+const newOrder = ref({
+  piattaforma: 'Vinted Pro',
+  prodotto: '',
+  prezzo: '',
+  username: '',
+  indirizzo: '',
+  email: '',
+  assegnato: ''
+})
+
+// Modifica al volo di un campo testuale (es. Prodotto, Prezzo, Acquirente)
+const editOrderField = async (order: Order, fieldName: string, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const newValue = target.value;
+  const originalValue = order[fieldName];
+
+  // Salviamo le chiavi originali nel caso in cui stessimo modificando proprio l'username o la data
+  const oldDate = order['Data'];
+  const oldUsername = order['Username Vinted'];
+
+  order[fieldName] = newValue;
+  order.isUpdating = true;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        token: API_TOKEN,
+        action: 'editOrderField',
+        oldDate: oldDate,
+        oldUsername: oldUsername,
+        field: fieldName,
+        value: newValue
+      })
+    });
+    const result = await response.json();
+    if (!result.success) {
+      alert("Errore di modifica: " + result.error);
+      order[fieldName] = originalValue; // Ripristina in caso di errore
+    }
+  } catch (error) {
+    console.error("Errore modifica campo:", error);
+    order[fieldName] = originalValue;
+  } finally {
+    order.isUpdating = false;
+  }
+};
+
+// Funzione per creare un ordine manuale
+const submitNewOrder = async () => {
+  if (!newOrder.value.prodotto || !newOrder.value.username) {
+    alert("Inserisci almeno il nome del prodotto e l'username dell'acquirente.");
+    return;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        token: API_TOKEN,
+        action: 'addOrder',
+        ...newOrder.value
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showAddModal.value = false;
+      // Ricarica la pagina o rinfresca la lista degli ordini per vedere il nuovo inserito
+      window.location.reload(); 
+    } else {
+      alert("Errore inserimento: " + result.error);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Impossibile comunicare con il server.");
+  }
+};
+
 // Parse DD/MM/YYYY into a sortable timestamp
 function parseDate(dateStr: string): number {
   if (!dateStr) return 0
@@ -89,26 +171,42 @@ const filteredOrders = computed(() => {
 })
 
 const updateField = async (order: Order, fieldName: string, event: Event) => {
-  const target = event.target as HTMLSelectElement
+  const target = event.target as HTMLSelectElement | HTMLInputElement
   const newValue = target.value
   const originalValue = order[fieldName]
+
+  if (newValue === originalValue) return
+
+  const oldDate = fieldName === 'Data' ? originalValue : order['Data']
+  const oldUsername = fieldName === 'Username Vinted' ? originalValue : order['Username Vinted']
 
   order[fieldName] = newValue
   order.isUpdating = true
 
+  const isDropdown = fieldName === 'Stato' || fieldName === 'Assegnato a'
+  const actionName = isDropdown ? 'updateField' : 'editOrderField'
+
   try {
-    await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         token: API_TOKEN,
-        action: 'updateField',
-        date: order['Data'],
-        username: order['Username Vinted'],
+        action: actionName,
+        date: oldDate,
+        username: oldUsername,
+        oldDate: oldDate,
+        oldUsername: oldUsername,
         field: fieldName,
         value: newValue,
       }),
     })
+    
+    const result = await response.json()
+    if (result && result.success === false) {
+      alert("Errore di modifica: " + result.error)
+      order[fieldName] = originalValue
+    }
   } catch (error) {
     console.error(`Errore aggiornamento ${fieldName}:`, error)
     alert('Impossibile aggiornare. Riprova.')
@@ -461,6 +559,9 @@ function logout() {
               class="search-input"
             />
           </div>
+          <button class="action-btn" @click="showAddModal = true" style="background: var(--color-primary); color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+  ➕ Nuovo Ordine
+</button>
           <div class="filter-tabs">
             <button
               class="filter-tab"
@@ -545,6 +646,7 @@ function logout() {
                   <th>Data</th>
                   <th>Piattaforma</th>
                   <th>Prodotto</th>
+                  <th>Prezzo</th>
                   <th>Acquirente</th>
                   <th>Assegnato a</th>
                   <th>Stato</th>
@@ -574,10 +676,43 @@ function logout() {
                   </td>
                   <td class="cell-date">{{ order['Data'] }}</td>
                   <td>
-                    <span class="platform-tag">{{ order['Piattaforma'] }}</span>
+                    <span class="platform-tag" style="padding: 0; display: inline-flex; border: none;">
+                      <input 
+                        type="text" 
+                        class="editable-input text-center"
+                        :value="order['Piattaforma']" 
+                        @blur="updateField(order, 'Piattaforma', $event)" 
+                        title="Clicca fuori per salvare"
+                      />
+                    </span>
                   </td>
-                  <td class="cell-product">{{ order['Prodotto'] }}</td>
-                  <td class="cell-buyer">{{ order['Username Vinted'] }}</td>
+                  <td class="cell-product">
+                    <input 
+                      type="text" 
+                      class="editable-input"
+                      :value="order['Prodotto']" 
+                      @blur="updateField(order, 'Prodotto', $event)" 
+                      title="Clicca fuori per salvare la modifica"
+                    />
+                  </td>
+                  <td class="cell-price">
+                    <input 
+                      type="text" 
+                      class="editable-input"
+                      :value="order['Prezzo'] || ''" 
+                      @blur="updateField(order, 'Prezzo', $event)" 
+                      title="Clicca fuori per salvare la modifica"
+                    />
+                  </td>
+                  <td class="cell-buyer">
+                    <input 
+                      type="text" 
+                      class="editable-input"
+                      :value="order['Username Vinted']" 
+                      @blur="updateField(order, 'Username Vinted', $event)" 
+                      title="Clicca fuori per salvare"
+                    />
+                  </td>
                   <!-- Dropdown Assegnato a -->
                   <td>
                     <select
@@ -704,7 +839,13 @@ function logout() {
                   @change="toggleOrder(order)"
                 />
                 <div class="card-header-text">
-                  <span class="card-product">{{ order['Prodotto'] }}</span>
+                  <input 
+                    type="text" 
+                    class="card-product editable-input"
+                    :value="order['Prodotto']" 
+                    @blur="updateField(order, 'Prodotto', $event)" 
+                    title="Clicca fuori per salvare"
+                  />
                   <span class="card-date">{{ order['Data'] }}</span>
                 </div>
               </div>
@@ -731,11 +872,25 @@ function logout() {
             <div class="card-details">
               <div class="card-detail">
                 <span class="card-label">Piattaforma</span>
-                <span class="platform-tag">{{ order['Piattaforma'] }}</span>
+                <span class="platform-tag" style="padding: 0; display: inline-flex; border: none;">
+                  <input 
+                    type="text" 
+                    class="editable-input text-center"
+                    :value="order['Piattaforma']" 
+                    @blur="updateField(order, 'Piattaforma', $event)" 
+                    title="Clicca fuori per salvare"
+                  />
+                </span>
               </div>
               <div class="card-detail">
                 <span class="card-label">Acquirente</span>
-                <span class="card-value">{{ order['Username Vinted'] }}</span>
+                <input 
+                  type="text" 
+                  class="card-value editable-input"
+                  :value="order['Username Vinted']" 
+                  @blur="updateField(order, 'Username Vinted', $event)" 
+                  title="Clicca fuori per salvare"
+                />
               </div>
               <div class="card-detail">
                 <span class="card-label">Assegnato a</span>
@@ -754,15 +909,20 @@ function logout() {
                   <option value="Gianluca">Gianluca</option>
                 </select>
               </div>
-              <div class="card-detail" v-if="order['Prezzo']">
+              <div class="card-detail">
                 <span class="card-label">Prezzo</span>
-                <span class="card-value card-price">{{ order['Prezzo'] }}</span>
+                <input 
+                  type="text" 
+                  class="card-value card-price editable-input text-right"
+                  :value="order['Prezzo'] || ''" 
+                  @blur="updateField(order, 'Prezzo', $event)" 
+                  title="Clicca fuori per salvare"
+                />
               </div>
-            </div>
-
-            <!-- Documenti -->
-            <div class="card-detail" style="margin-bottom: 1rem; border-top: 1px solid #eee; padding-top: 0.5rem; flex-direction: column; align-items: flex-start;">
-              <span class="card-label" style="margin-bottom: 0.5rem;">Documenti</span>
+              
+              <!-- Documenti -->
+              <div class="card-detail" style="flex-direction: column; align-items: flex-start;">
+                <span class="card-label" style="margin-bottom: 0.5rem;">Documenti</span>
               <!-- Se c'è già un PDF allegato -->
               <div v-if="order['PDF']" class="pdf-actions" style="display: flex; gap: 0.5rem;">
                 <a 
@@ -801,6 +961,7 @@ function logout() {
                 </button>
               </div>
             </div>
+            </div>
 
             <!-- Card Actions -->
             <div class="card-actions">
@@ -836,6 +997,45 @@ function logout() {
       </template>
     </div>
   </main>
+  <!-- MODALE NUOVO ORDINE -->
+<div v-if="showAddModal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div class="modal-content" style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%;">
+    <h3 style="margin-bottom: 16px;">Aggiungi Nuovo Ordine</h3>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <label>Piattaforma</label>
+      <select v-model="newOrder.piattaforma" class="field-select" style="width:100%; padding:8px;">
+        <option value="Vinted Pro">Vinted Pro</option>
+        <option value="TikTok Shop">TikTok Shop</option>
+        <option value="eBay">eBay</option>
+      </select>
+
+      <label>Prodotto</label>
+      <input v-model="newOrder.prodotto" type="text" placeholder="Es. Cactus Tech Stand" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" />
+
+      <label>Prezzo</label>
+      <input v-model="newOrder.prezzo" type="text" placeholder="Es. €14.90" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" />
+
+      <label>Username Acquirente</label>
+      <input v-model="newOrder.username" type="text" placeholder="Es. mades10" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" />
+
+      <label>Indirizzo di Spedizione</label>
+      <input v-model="newOrder.indirizzo" type="text" placeholder="Via Roma 1, Napoli" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" />
+
+      <label>Assegnato a</label>
+      <select v-model="newOrder.assegnato" class="field-select" style="width:100%; padding:8px;">
+        <option value="">Nessuno</option>
+        <option value="Stefano">Stefano</option>
+        <option value="Gianluca">Gianluca</option>
+      </select>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+      <button @click="showAddModal = false" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Annulla</button>
+      <button @click="submitNewOrder" style="padding: 8px 16px; background: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer;">Salva Ordine</button>
+    </div>
+  </div>
+</div>
 </template>
 
 <style scoped>
@@ -1231,6 +1431,44 @@ function logout() {
   color: var(--color-text-light);
 }
 
+.cell-price {
+  font-weight: 500;
+}
+
+/* ===== Editable Inputs ===== */
+.editable-input {
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  padding: 4px 6px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.editable-input:hover {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.1);
+}
+
+.editable-input:focus {
+  background: #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.editable-input.text-center {
+  text-align: center;
+}
+
+.editable-input.text-right {
+  text-align: right;
+}
+
 /* ===== Checkboxes & Selection ===== */
 .th-checkbox,
 .cell-checkbox {
@@ -1485,6 +1723,7 @@ function logout() {
 /* ===== Card Actions Container (Mobile) ===== */
 .card-actions {
   display: flex;
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -1633,7 +1872,6 @@ function logout() {
   gap: 0.5rem 1.25rem;
   margin-bottom: 0.85rem;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--color-border-light);
 }
 
 .card-detail {
@@ -1661,7 +1899,7 @@ function logout() {
 }
 
 .card-action-btn {
-  width: 100%;
+  min-width: 120px;
   padding: 0.65rem 1rem;
   font-size: var(--font-size-sm);
   border-radius: var(--radius-sm);
