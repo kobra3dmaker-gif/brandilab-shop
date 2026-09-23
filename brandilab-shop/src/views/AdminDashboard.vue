@@ -50,7 +50,8 @@ onMounted(async () => {
 const totalOrders = computed(() => orders.value.length)
 const shippedOrders = computed(() => orders.value.filter(o => o['Stato'] === 'Spedito').length)
 const printedOrders = computed(() => orders.value.filter(o => o['Stato'] === 'Stampato').length)
-const pendingOrders = computed(() => orders.value.filter(o => o['Stato'] !== 'Spedito' && o['Stato'] !== 'Stampato').length)
+const pendingOrders = computed(() => orders.value.filter(o => o['Stato'] === 'Da Spedire').length)
+const toPrintOrders = computed(() => orders.value.filter(o => !o['Stato'] || o['Stato'] === 'Da Stampare').length)
 const platforms = computed(() => {
   const map = new Map<string, number>()
   for (const o of orders.value) {
@@ -69,7 +70,9 @@ const filteredOrders = computed(() => {
   } else if (statusFilter.value === 'printed') {
     result = result.filter(o => o['Stato'] === 'Stampato')
   } else if (statusFilter.value === 'pending') {
-    result = result.filter(o => o['Stato'] !== 'Spedito' && o['Stato'] !== 'Stampato')
+    result = result.filter(o => o['Stato'] === 'Da Spedire')
+  } else if (statusFilter.value === 'toprint') {
+    result = result.filter(o => !o['Stato'] || o['Stato'] === 'Da Stampare')
   }
 
   if (searchQuery.value.trim()) {
@@ -141,6 +144,96 @@ const deleteOrder = async (order: Order) => {
     order.isDeleting = false
   }
 }
+
+// Simula il click sull'input nascosto per aprire la finestra di scelta file
+const triggerUpload = (index: number) => {
+  const input = document.getElementById(`upload-${index}`) as HTMLInputElement;
+  if (input) input.click();
+};
+
+const triggerUploadMobile = (index: number) => {
+  const input = document.getElementById(`upload-mobile-${index}`) as HTMLInputElement;
+  if (input) input.click();
+};
+
+const uploadPDF = (order: Order, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file || file.type !== "application/pdf") {
+    alert("Seleziona un file PDF valido.");
+    return;
+  }
+
+  order.isUploadingPDF = true;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64Data = (e.target?.result as string).split(',')[1];
+    const fileName = `Ordine_${order['Username Vinted']}_${Date.now()}.pdf`;
+
+    try {
+      // Tolto mode: 'no-cors' in modo da poter leggere il fileId o i veri messaggi di errore
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          token: API_TOKEN,
+          action: 'uploadPDF',
+          date: order['Data'],
+          username: order['Username Vinted'],
+          fileName: fileName,
+          base64Data: base64Data
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        order['PDF'] = result.fileId; // Aggiorna UI istantaneamente
+      } else {
+        // Mostra il VERO motivo per cui Google ha rifiutato l'operazione
+        alert("Errore dal server: " + result.error);
+        console.error("Dettaglio errore:", result.error);
+      }
+      
+    } catch (error) {
+      console.error("Errore di rete durante la fetch:", error);
+      alert("Caricamento fallito. Controlla la console.");
+    } finally {
+      order.isUploadingPDF = false;
+      target.value = ""; // Resetta l'input
+    }
+  };
+  
+  reader.readAsDataURL(file);
+};
+
+const deletePDF = async (order: Order) => {
+  if (!confirm("Rimuovere il PDF allegato?")) return;
+  
+  order.isDeletingPDF = true;
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({
+        token: API_TOKEN,
+        action: 'deletePDF',
+        date: order['Data'],
+        username: order['Username Vinted']
+      })
+    });
+    order['PDF'] = ""; 
+  } catch (error) {
+    console.error("Errore rimozione:", error);
+    alert("Rimozione fallita.");
+  } finally {
+    order.isDeletingPDF = false;
+  }
+};
 
 // ===== Multi-select =====
 const selectedOrders = ref<Set<Order>>(new Set())
@@ -305,6 +398,20 @@ function logout() {
           </div>
 
           <div class="stat-card">
+            <div class="stat-icon stat-icon--toprint">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-number">{{ toPrintOrders }}</span>
+              <span class="stat-label">Da Stampare</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
             <div class="stat-icon stat-icon--pending">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -361,6 +468,13 @@ function logout() {
               @click="statusFilter = 'all'"
             >
               Tutti <span class="tab-count">{{ totalOrders }}</span>
+            </button>
+            <button
+              class="filter-tab"
+              :class="{ active: statusFilter === 'toprint' }"
+              @click="statusFilter = 'toprint'"
+            >
+              Da Stampare <span class="tab-count">{{ toPrintOrders }}</span>
             </button>
             <button
               class="filter-tab"
@@ -434,6 +548,7 @@ function logout() {
                   <th>Acquirente</th>
                   <th>Assegnato a</th>
                   <th>Stato</th>
+                  <th>Documenti</th>
                   <th class="th-action">Azione</th>
                 </tr>
               </thead>
@@ -442,6 +557,8 @@ function logout() {
                   v-for="(order, index) in filteredOrders"
                   :key="'t-' + index"
                   :class="{
+                    'row-to-print': !order['Stato'] || order['Stato'] === 'Da Stampare',
+                    'row-pending': order['Stato'] === 'Da Spedire',
                     'row-shipped': order['Stato'] === 'Spedito',
                     'row-printed': order['Stato'] === 'Stampato',
                     'row-selected': selectedOrders.has(order),
@@ -468,6 +585,10 @@ function logout() {
                       :value="order['Assegnato a'] || ''"
                       @change="updateField(order, 'Assegnato a', $event)"
                       :disabled="order.isUpdating"
+                      :class="{
+                        'assign-stefano': order['Assegnato a'] === 'Stefano',
+                        'assign-gianluca': order['Assegnato a'] === 'Gianluca',
+                      }"
                     >
                       <option value="" disabled>Seleziona...</option>
                       <option value="Stefano">Stefano</option>
@@ -479,20 +600,62 @@ function logout() {
                     <div class="status-cell">
                       <select
                         class="field-select status-select"
-                        :value="order['Stato'] || 'Da Spedire'"
+                        :value="order['Stato'] || 'Da Stampare'"
                         @change="updateField(order, 'Stato', $event)"
                         :disabled="order.isUpdating"
                         :class="{
-                          'select-pending': !order['Stato'] || order['Stato'] === 'Da Spedire',
+                          'select-to-print': !order['Stato'] || order['Stato'] === 'Da Stampare',
+                          'select-pending': order['Stato'] === 'Da Spedire',
                           'select-printed': order['Stato'] === 'Stampato',
                           'select-shipped': order['Stato'] === 'Spedito',
                         }"
                       >
+                        <option value="Da Stampare">Da Stampare</option>
                         <option value="Da Spedire">Da Spedire</option>
                         <option value="Stampato">Stampato</option>
                         <option value="Spedito">Spedito</option>
                       </select>
                       <span v-if="order.isUpdating" class="loading-spinner">⏳</span>
+                    </div>
+                  </td>
+                  <!-- Documenti -->
+                  <td class="cell-pdf">
+                    <!-- Se c'è già un PDF allegato -->
+                    <div v-if="order['PDF']" class="pdf-actions">
+                      <a 
+                        :href="'https://drive.google.com/file/d/' + order['PDF'] + '/view'" 
+                        target="_blank" 
+                        class="action-btn view-btn"
+                      >
+                        📄 Apri
+                      </a>
+                      <button 
+                        @click="deletePDF(order)" 
+                        :disabled="order.isDeletingPDF" 
+                        class="action-btn delete-btn"
+                      >
+                        <span v-if="order.isDeletingPDF">⏳</span>
+                        <span v-else>✕</span>
+                      </button>
+                    </div>
+
+                    <!-- Se non c'è ancora un PDF allegato -->
+                    <div v-else class="pdf-upload">
+                      <input 
+                        type="file" 
+                        accept="application/pdf" 
+                        style="display: none;" 
+                        :id="'upload-' + index" 
+                        @change="uploadPDF(order, $event)"
+                      >
+                      <button 
+                        @click="triggerUpload(index)" 
+                        :disabled="order.isUploadingPDF" 
+                        class="action-btn upload-btn"
+                      >
+                        <span v-if="order.isUploadingPDF">Caricamento...</span>
+                        <span v-else>➕ Allega</span>
+                      </button>
                     </div>
                   </td>
                   <!-- Azione -->
@@ -524,6 +687,8 @@ function logout() {
             :key="'c-' + index"
             class="order-card"
             :class="{
+              'card-to-print': !order['Stato'] || order['Stato'] === 'Da Stampare',
+              'card-pending': order['Stato'] === 'Da Spedire',
               'card-shipped': order['Stato'] === 'Spedito',
               'card-printed': order['Stato'] === 'Stampato',
               'card-selected': selectedOrders.has(order),
@@ -545,15 +710,17 @@ function logout() {
               </div>
               <select
                 class="field-select status-select"
-                :value="order['Stato'] || 'Da Spedire'"
+                :value="order['Stato'] || 'Da Stampare'"
                 @change="updateField(order, 'Stato', $event)"
                 :disabled="order.isUpdating"
                 :class="{
-                  'select-pending': !order['Stato'] || order['Stato'] === 'Da Spedire',
+                  'select-to-print': !order['Stato'] || order['Stato'] === 'Da Stampare',
+                  'select-pending': order['Stato'] === 'Da Spedire',
                   'select-printed': order['Stato'] === 'Stampato',
                   'select-shipped': order['Stato'] === 'Spedito',
                 }"
               >
+                <option value="Da Stampare">Da Stampare</option>
                 <option value="Da Spedire">Da Spedire</option>
                 <option value="Stampato">Stampato</option>
                 <option value="Spedito">Spedito</option>
@@ -577,6 +744,10 @@ function logout() {
                   :value="order['Assegnato a'] || ''"
                   @change="updateField(order, 'Assegnato a', $event)"
                   :disabled="order.isUpdating"
+                  :class="{
+                    'assign-stefano': order['Assegnato a'] === 'Stefano',
+                    'assign-gianluca': order['Assegnato a'] === 'Gianluca',
+                  }"
                 >
                   <option value="" disabled>Seleziona...</option>
                   <option value="Stefano">Stefano</option>
@@ -586,6 +757,48 @@ function logout() {
               <div class="card-detail" v-if="order['Prezzo']">
                 <span class="card-label">Prezzo</span>
                 <span class="card-value card-price">{{ order['Prezzo'] }}</span>
+              </div>
+            </div>
+
+            <!-- Documenti -->
+            <div class="card-detail" style="margin-bottom: 1rem; border-top: 1px solid #eee; padding-top: 0.5rem; flex-direction: column; align-items: flex-start;">
+              <span class="card-label" style="margin-bottom: 0.5rem;">Documenti</span>
+              <!-- Se c'è già un PDF allegato -->
+              <div v-if="order['PDF']" class="pdf-actions" style="display: flex; gap: 0.5rem;">
+                <a 
+                  :href="'https://drive.google.com/file/d/' + order['PDF'] + '/view'" 
+                  target="_blank" 
+                  class="action-btn view-btn"
+                >
+                  📄 Apri
+                </a>
+                <button 
+                  @click="deletePDF(order)" 
+                  :disabled="order.isDeletingPDF" 
+                  class="action-btn delete-btn"
+                >
+                  <span v-if="order.isDeletingPDF">⏳</span>
+                  <span v-else>✕</span>
+                </button>
+              </div>
+
+              <!-- Se non c'è ancora un PDF allegato -->
+              <div v-else class="pdf-upload">
+                <input 
+                  type="file" 
+                  accept="application/pdf" 
+                  style="display: none;" 
+                  :id="'upload-mobile-' + index" 
+                  @change="uploadPDF(order, $event)"
+                >
+                <button 
+                  @click="triggerUploadMobile(index)" 
+                  :disabled="order.isUploadingPDF" 
+                  class="action-btn upload-btn"
+                >
+                  <span v-if="order.isUploadingPDF">Caricamento...</span>
+                  <span v-else>➕ Allega</span>
+                </button>
               </div>
             </div>
 
@@ -775,6 +988,11 @@ function logout() {
 .stat-icon--total {
   background: rgba(26, 26, 46, 0.08);
   color: var(--color-primary);
+}
+
+.stat-icon--toprint {
+  background: #ffebee;
+  color: #c62828;
 }
 
 .stat-icon--pending {
@@ -974,6 +1192,22 @@ function logout() {
   opacity: 1;
 }
 
+.row-to-print {
+  background-color: #fffafb;
+}
+
+.row-to-print:hover {
+  background-color: #ffebee;
+}
+
+.row-pending {
+  background-color: #fffdfa;
+}
+
+.row-pending:hover {
+  background-color: #fff3e0;
+}
+
 .row-printed {
   background-color: #fffde7;
 }
@@ -1171,6 +1405,35 @@ function logout() {
 
 .action-btn:disabled {
   cursor: default;
+  opacity: 0.6;
+}
+
+/* ===== PDF Actions ===== */
+.pdf-actions, .pdf-upload {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-btn {
+  color: #1976d2;
+  background-color: #e3f2fd;
+  border-color: #bbdefb;
+  text-decoration: none;
+}
+
+.view-btn:hover:not(:disabled) {
+  background-color: #bbdefb;
+}
+
+.upload-btn {
+  color: #388e3c;
+  background-color: #e8f5e9;
+  border-color: #c8e6c9;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background-color: #c8e6c9;
 }
 
 .action-done {
@@ -1248,6 +1511,14 @@ function logout() {
   opacity: 1;
 }
 
+.card-to-print {
+  background-color: #fffafb;
+}
+
+.card-pending {
+  background-color: #fffdfa;
+}
+
 .card-printed {
   background-color: #fffde7;
 }
@@ -1276,6 +1547,11 @@ function logout() {
   opacity: 0.6;
   cursor: default;
 }
+.status-select.select-to-print {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ef9a9a;
+}
 
 .status-select.select-pending {
   background: #fff3e0;
@@ -1297,6 +1573,18 @@ function logout() {
 
 .assign-select {
   min-width: 100px;
+}
+
+.assign-select.assign-stefano {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-color: #90caf9;
+}
+
+.assign-select.assign-gianluca {
+  background: #fce4ec;
+  color: #c2185b;
+  border-color: #f48fb1;
 }
 
 .status-cell {
