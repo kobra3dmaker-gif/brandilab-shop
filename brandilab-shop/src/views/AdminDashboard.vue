@@ -49,7 +49,8 @@ onMounted(async () => {
 // Stats
 const totalOrders = computed(() => orders.value.length)
 const shippedOrders = computed(() => orders.value.filter(o => o['Stato'] === 'Spedito').length)
-const pendingOrders = computed(() => totalOrders.value - shippedOrders.value)
+const printedOrders = computed(() => orders.value.filter(o => o['Stato'] === 'Stampato').length)
+const pendingOrders = computed(() => orders.value.filter(o => o['Stato'] !== 'Spedito' && o['Stato'] !== 'Stampato').length)
 const platforms = computed(() => {
   const map = new Map<string, number>()
   for (const o of orders.value) {
@@ -65,8 +66,10 @@ const filteredOrders = computed(() => {
 
   if (statusFilter.value === 'shipped') {
     result = result.filter(o => o['Stato'] === 'Spedito')
+  } else if (statusFilter.value === 'printed') {
+    result = result.filter(o => o['Stato'] === 'Stampato')
   } else if (statusFilter.value === 'pending') {
-    result = result.filter(o => o['Stato'] !== 'Spedito')
+    result = result.filter(o => o['Stato'] !== 'Spedito' && o['Stato'] !== 'Stampato')
   }
 
   if (searchQuery.value.trim()) {
@@ -74,32 +77,171 @@ const filteredOrders = computed(() => {
     result = result.filter(o =>
       (o['Prodotto'] || '').toLowerCase().includes(q) ||
       (o['Username Vinted'] || '').toLowerCase().includes(q) ||
-      (o['Piattaforma'] || '').toLowerCase().includes(q)
+      (o['Piattaforma'] || '').toLowerCase().includes(q) ||
+      (o['Assegnato a'] || '').toLowerCase().includes(q)
     )
   }
 
   return result
 })
 
-const markAsShipped = async (order: Order) => {
+const updateField = async (order: Order, fieldName: string, event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const newValue = target.value
+  const originalValue = order[fieldName]
+
+  order[fieldName] = newValue
   order.isUpdating = true
+
   try {
     await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({
         token: API_TOKEN,
-        action: 'markShipped',
+        action: 'updateField',
+        date: order['Data'],
+        username: order['Username Vinted'],
+        field: fieldName,
+        value: newValue,
+      }),
+    })
+  } catch (error) {
+    console.error(`Errore aggiornamento ${fieldName}:`, error)
+    alert('Impossibile aggiornare. Riprova.')
+    order[fieldName] = originalValue
+  } finally {
+    order.isUpdating = false
+  }
+}
+
+const deleteOrder = async (order: Order) => {
+  if (!confirm(`Sei sicuro di voler eliminare l'ordine di ${order['Username Vinted']}? L'azione è irreversibile.`)) {
+    return
+  }
+
+  order.isDeleting = true
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({
+        token: API_TOKEN,
+        action: 'deleteOrder',
         date: order['Data'],
         username: order['Username Vinted'],
       }),
     })
-    order['Stato'] = 'Spedito'
+
+    orders.value = orders.value.filter(o => o !== order)
   } catch (error) {
-    console.error('Error updating order:', error)
-    alert('Impossibile aggiornare l\'ordine.')
+    console.error('Errore durante l\'eliminazione dell\'ordine:', error)
+    alert('Impossibile eliminare l\'ordine.')
+    order.isDeleting = false
+  }
+}
+
+// ===== Multi-select =====
+const selectedOrders = ref<Set<Order>>(new Set())
+const isBulkProcessing = ref(false)
+
+const isAllSelected = computed(() => {
+  return filteredOrders.value.length > 0 && filteredOrders.value.every(o => selectedOrders.value.has(o))
+})
+
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    // Deselect all visible
+    for (const o of filteredOrders.value) {
+      selectedOrders.value.delete(o)
+    }
+  } else {
+    // Select all visible
+    for (const o of filteredOrders.value) {
+      selectedOrders.value.add(o)
+    }
+  }
+  // Trigger reactivity
+  selectedOrders.value = new Set(selectedOrders.value)
+}
+
+function toggleOrder(order: Order) {
+  if (selectedOrders.value.has(order)) {
+    selectedOrders.value.delete(order)
+  } else {
+    selectedOrders.value.add(order)
+  }
+  selectedOrders.value = new Set(selectedOrders.value)
+}
+
+function clearSelection() {
+  selectedOrders.value = new Set()
+}
+
+const bulkMarkAsShipped = async () => {
+  const toShip = [...selectedOrders.value].filter(o => o['Stato'] !== 'Spedito')
+  if (toShip.length === 0) {
+    alert('Tutti gli ordini selezionati sono già spediti.')
+    return
+  }
+  if (!confirm(`Segnare ${toShip.length} ordini come spediti?`)) return
+
+  isBulkProcessing.value = true
+  try {
+    for (const order of toShip) {
+      order.isUpdating = true
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({
+          token: API_TOKEN,
+          action: 'updateField',
+          date: order['Data'],
+          username: order['Username Vinted'],
+          field: 'Stato',
+          value: 'Spedito',
+        }),
+      })
+      order['Stato'] = 'Spedito'
+      order.isUpdating = false
+    }
+    clearSelection()
+  } catch (error) {
+    console.error('Errore bulk shipped:', error)
+    alert('Errore durante l\'aggiornamento di alcuni ordini.')
   } finally {
-    order.isUpdating = false
+    isBulkProcessing.value = false
+  }
+}
+
+const bulkDeleteOrders = async () => {
+  const toDelete = [...selectedOrders.value]
+  if (toDelete.length === 0) return
+  if (!confirm(`Sei sicuro di voler eliminare ${toDelete.length} ordini? L'azione è irreversibile.`)) return
+
+  isBulkProcessing.value = true
+  try {
+    for (const order of toDelete) {
+      order.isDeleting = true
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({
+          token: API_TOKEN,
+          action: 'deleteOrder',
+          date: order['Data'],
+          username: order['Username Vinted'],
+        }),
+      })
+    }
+    orders.value = orders.value.filter(o => !toDelete.includes(o))
+    clearSelection()
+  } catch (error) {
+    console.error('Errore bulk delete:', error)
+    alert('Errore durante l\'eliminazione di alcuni ordini.')
+  } finally {
+    isBulkProcessing.value = false
   }
 }
 
@@ -128,7 +270,6 @@ function logout() {
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          <span>Esci</span>
           <span class="logout-text">Esci</span>
         </button>
       </header>
@@ -230,6 +371,13 @@ function logout() {
             </button>
             <button
               class="filter-tab"
+              :class="{ active: statusFilter === 'printed' }"
+              @click="statusFilter = 'printed'"
+            >
+              Stampati <span class="tab-count">{{ printedOrders }}</span>
+            </button>
+            <button
+              class="filter-tab"
               :class="{ active: statusFilter === 'shipped' }"
               @click="statusFilter = 'shipped'"
             >
@@ -238,16 +386,53 @@ function logout() {
           </div>
         </section>
 
+        <!-- Bulk Action Bar -->
+        <transition name="bulk-bar">
+          <section v-if="selectedOrders.size > 0" class="bulk-bar">
+            <div class="bulk-bar-left">
+              <span class="bulk-count">{{ selectedOrders.size }} selezionati</span>
+              <button class="bulk-clear-btn" @click="clearSelection">✕ Deseleziona</button>
+            </div>
+            <div class="bulk-bar-right">
+              <button
+                class="action-btn bulk-action-shipped"
+                :disabled="isBulkProcessing"
+                @click="bulkMarkAsShipped"
+              >
+                <span v-if="isBulkProcessing" class="btn-spinner" />
+                <span v-else>Segna Spediti ✓</span>
+              </button>
+              <button
+                class="action-btn delete-btn"
+                :disabled="isBulkProcessing"
+                @click="bulkDeleteOrders"
+              >
+                <span v-if="isBulkProcessing" class="btn-spinner" />
+                <span v-else>Elimina 🗑️</span>
+              </button>
+            </div>
+          </section>
+        </transition>
+
         <!-- Desktop: Orders Table -->
         <section class="table-panel desktop-only">
           <div class="table-wrapper">
             <table class="orders-table">
               <thead>
                 <tr>
+                  <th class="th-checkbox">
+                    <input
+                      type="checkbox"
+                      class="order-checkbox"
+                      :checked="isAllSelected"
+                      @change="toggleSelectAll"
+                    />
+                  </th>
                   <th>Data</th>
                   <th>Piattaforma</th>
                   <th>Prodotto</th>
                   <th>Acquirente</th>
+                  <th>Assegnato a</th>
                   <th>Stato</th>
                   <th class="th-action">Azione</th>
                 </tr>
@@ -256,43 +441,73 @@ function logout() {
                 <tr
                   v-for="(order, index) in filteredOrders"
                   :key="'t-' + index"
-                  :class="{ 'row-shipped': order['Stato'] === 'Spedito' }"
+                  :class="{
+                    'row-shipped': order['Stato'] === 'Spedito',
+                    'row-printed': order['Stato'] === 'Stampato',
+                    'row-selected': selectedOrders.has(order),
+                  }"
                 >
+                  <td class="cell-checkbox">
+                    <input
+                      type="checkbox"
+                      class="order-checkbox"
+                      :checked="selectedOrders.has(order)"
+                      @change="toggleOrder(order)"
+                    />
+                  </td>
                   <td class="cell-date">{{ order['Data'] }}</td>
                   <td>
                     <span class="platform-tag">{{ order['Piattaforma'] }}</span>
                   </td>
                   <td class="cell-product">{{ order['Prodotto'] }}</td>
                   <td class="cell-buyer">{{ order['Username Vinted'] }}</td>
+                  <!-- Dropdown Assegnato a -->
                   <td>
-                    <span
-                      class="status-pill"
-                      :class="order['Stato'] === 'Spedito' ? 'status-shipped' : 'status-pending'"
+                    <select
+                      class="field-select assign-select"
+                      :value="order['Assegnato a'] || ''"
+                      @change="updateField(order, 'Assegnato a', $event)"
+                      :disabled="order.isUpdating"
                     >
-                      <span class="status-dot" />
-                      {{ order['Stato'] || 'Da spedire' }}
-                    </span>
+                      <option value="" disabled>Seleziona...</option>
+                      <option value="Stefano">Stefano</option>
+                      <option value="Gianluca">Gianluca</option>
+                    </select>
                   </td>
+                  <!-- Dropdown Stato -->
                   <td>
+                    <div class="status-cell">
+                      <select
+                        class="field-select status-select"
+                        :value="order['Stato'] || 'Da Spedire'"
+                        @change="updateField(order, 'Stato', $event)"
+                        :disabled="order.isUpdating"
+                        :class="{
+                          'select-pending': !order['Stato'] || order['Stato'] === 'Da Spedire',
+                          'select-printed': order['Stato'] === 'Stampato',
+                          'select-shipped': order['Stato'] === 'Spedito',
+                        }"
+                      >
+                        <option value="Da Spedire">Da Spedire</option>
+                        <option value="Stampato">Stampato</option>
+                        <option value="Spedito">Spedito</option>
+                      </select>
+                      <span v-if="order.isUpdating" class="loading-spinner">⏳</span>
+                    </div>
+                  </td>
+                  <!-- Azione -->
+                  <td class="action-buttons">
                     <button
-                      class="action-btn"
-                      :class="{
-                        'action-done': order['Stato'] === 'Spedito',
-                        'action-loading': order.isUpdating,
-                      }"
-                      :disabled="order['Stato'] === 'Spedito' || order.isUpdating"
-                      @click="markAsShipped(order)"
+                      class="action-btn delete-btn"
+                      :disabled="order.isDeleting"
+                      @click="deleteOrder(order)"
                     >
-                      <template v-if="order.isUpdating">
+                      <template v-if="order.isDeleting">
                         <span class="btn-spinner" />
-                        Aggiornamento…
-                      </template>
-                      <template v-else-if="order['Stato'] === 'Spedito'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Fatto
+                        Eliminazione…
                       </template>
                       <template v-else>
-                        Segna Spedito
+                        Elimina 🗑️
                       </template>
                     </button>
                   </td>
@@ -308,21 +523,41 @@ function logout() {
             v-for="(order, index) in filteredOrders"
             :key="'c-' + index"
             class="order-card"
-            :class="{ 'card-shipped': order['Stato'] === 'Spedito' }"
+            :class="{
+              'card-shipped': order['Stato'] === 'Spedito',
+              'card-printed': order['Stato'] === 'Stampato',
+              'card-selected': selectedOrders.has(order),
+            }"
           >
             <!-- Card Header -->
             <div class="card-header">
               <div class="card-header-left">
-                <span class="card-product">{{ order['Prodotto'] }}</span>
-                <span class="card-date">{{ order['Data'] }}</span>
+                <input
+                  type="checkbox"
+                  class="order-checkbox"
+                  :checked="selectedOrders.has(order)"
+                  @change="toggleOrder(order)"
+                />
+                <div class="card-header-text">
+                  <span class="card-product">{{ order['Prodotto'] }}</span>
+                  <span class="card-date">{{ order['Data'] }}</span>
+                </div>
               </div>
-              <span
-                class="status-pill"
-                :class="order['Stato'] === 'Spedito' ? 'status-shipped' : 'status-pending'"
+              <select
+                class="field-select status-select"
+                :value="order['Stato'] || 'Da Spedire'"
+                @change="updateField(order, 'Stato', $event)"
+                :disabled="order.isUpdating"
+                :class="{
+                  'select-pending': !order['Stato'] || order['Stato'] === 'Da Spedire',
+                  'select-printed': order['Stato'] === 'Stampato',
+                  'select-shipped': order['Stato'] === 'Spedito',
+                }"
               >
-                <span class="status-dot" />
-                {{ order['Stato'] || 'Da spedire' }}
-              </span>
+                <option value="Da Spedire">Da Spedire</option>
+                <option value="Stampato">Stampato</option>
+                <option value="Spedito">Spedito</option>
+              </select>
             </div>
 
             <!-- Card Body -->
@@ -335,34 +570,41 @@ function logout() {
                 <span class="card-label">Acquirente</span>
                 <span class="card-value">{{ order['Username Vinted'] }}</span>
               </div>
+              <div class="card-detail">
+                <span class="card-label">Assegnato a</span>
+                <select
+                  class="field-select assign-select"
+                  :value="order['Assegnato a'] || ''"
+                  @change="updateField(order, 'Assegnato a', $event)"
+                  :disabled="order.isUpdating"
+                >
+                  <option value="" disabled>Seleziona...</option>
+                  <option value="Stefano">Stefano</option>
+                  <option value="Gianluca">Gianluca</option>
+                </select>
+              </div>
               <div class="card-detail" v-if="order['Prezzo']">
                 <span class="card-label">Prezzo</span>
                 <span class="card-value card-price">{{ order['Prezzo'] }}</span>
               </div>
             </div>
 
-            <!-- Card Action -->
-            <button
-              class="action-btn card-action-btn"
-              :class="{
-                'action-done': order['Stato'] === 'Spedito',
-                'action-loading': order.isUpdating,
-              }"
-              :disabled="order['Stato'] === 'Spedito' || order.isUpdating"
-              @click="markAsShipped(order)"
-            >
-              <template v-if="order.isUpdating">
-                <span class="btn-spinner" />
-                Aggiornamento…
-              </template>
-              <template v-else-if="order['Stato'] === 'Spedito'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Completato
-              </template>
-              <template v-else>
-                Segna come Spedito ✓
-              </template>
-            </button>
+            <!-- Card Actions -->
+            <div class="card-actions">
+              <button
+                class="action-btn card-action-btn delete-btn"
+                :disabled="order.isDeleting"
+                @click="deleteOrder(order)"
+              >
+                <template v-if="order.isDeleting">
+                  <span class="btn-spinner" />
+                  Eliminazione…
+                </template>
+                <template v-else>
+                  Elimina 🗑️
+                </template>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -727,6 +969,19 @@ function logout() {
   opacity: 0.75;
 }
 
+.row-shipped .delete-btn,
+.row-shipped:hover .delete-btn {
+  opacity: 1;
+}
+
+.row-printed {
+  background-color: #fffde7;
+}
+
+.row-printed:hover {
+  background-color: #fff9c4;
+}
+
 .cell-date {
   white-space: nowrap;
   color: var(--color-text-light);
@@ -741,6 +996,106 @@ function logout() {
 .cell-buyer {
   color: var(--color-text-light);
 }
+
+/* ===== Checkboxes & Selection ===== */
+.th-checkbox,
+.cell-checkbox {
+  width: 40px;
+  text-align: center;
+  padding-left: 0.75rem;
+  padding-right: 0;
+}
+
+.order-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.row-selected {
+  background: var(--color-accent-light) !important;
+}
+
+.card-selected {
+  outline: 2px solid var(--color-accent);
+  background: var(--color-accent-light) !important;
+}
+
+.card-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* ===== Bulk Action Bar ===== */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1.2rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.bulk-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bulk-count {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.bulk-clear-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.bulk-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.bulk-bar-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bulk-action-shipped {
+  background: var(--color-success) !important;
+}
+
+.bulk-action-shipped:hover:not(:disabled) {
+  background: #1e8449 !important;
+}
+
+/* Bulk bar transition */
+.bulk-bar-enter-active,
+.bulk-bar-leave-active {
+  transition: all 0.25s ease;
+}
+
+.bulk-bar-enter-from,
+.bulk-bar-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 
 .platform-tag {
   display: inline-block;
@@ -838,10 +1193,41 @@ function logout() {
   animation: spin 0.6s linear infinite;
 }
 
+/* ===== Delete Button ===== */
+.delete-btn {
+  background: #e74c3c !important;
+  color: white !important;
+  border: none !important;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #c0392b !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ===== Action Buttons Container (Desktop) ===== */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* ===== Card Actions Container (Mobile) ===== */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* Empty */
 /* ===== Mobile Order Cards ===== */
 .cards-list {
-  display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
@@ -858,6 +1244,71 @@ function logout() {
   opacity: 0.55;
 }
 
+.card-shipped .delete-btn {
+  opacity: 1;
+}
+
+.card-printed {
+  background-color: #fffde7;
+}
+
+/* ===== Field Select Dropdowns ===== */
+.field-select {
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  outline: none;
+  min-width: 0;
+}
+
+.field-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.field-select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.status-select.select-pending {
+  background: #fff3e0;
+  color: #bf6c00;
+  border-color: #ffcc80;
+}
+
+.status-select.select-printed {
+  background: #fffde7;
+  color: #f57f17;
+  border-color: #fff176;
+}
+
+.status-select.select-shipped {
+  background: rgba(39, 174, 96, 0.1);
+  color: #1e8449;
+  border-color: #a9dfbf;
+}
+
+.assign-select {
+  min-width: 100px;
+}
+
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.loading-spinner {
+  font-size: 0.8em;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -868,8 +1319,9 @@ function logout() {
 
 .card-header-left {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
   min-width: 0;
 }
 
