@@ -5,6 +5,7 @@ const ShopView = () => import('@/views/ShopView.vue')
 const ProductView = () => import('@/views/ProductView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
+const OrderConfirmationView = () => import('@/views/OrderConfirmationView.vue')
 const AdminDashboard = () => import('@/views/AdminDashboard.vue')
 
 const router = createRouter({
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/contact',
       name: 'contact',
       component: ContactView,
+    },
+    {
+      path: '/order-confirmation',
+      name: 'order-confirmation',
+      component: OrderConfirmationView,
     },
     {
       path: '/admin-dashboard',

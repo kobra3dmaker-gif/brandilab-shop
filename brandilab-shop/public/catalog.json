@@ -7,6 +7,7 @@
     "description": "A sleek and durable desk stand for your smartphone. 3D printed in premium PLA with a clean, minimalist design that complements any workspace.",
     "image": "https://placehold.co/600x600/e8f5e9/2d3436?text=Phone+Stand",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Accessories",
     "featured": true
   },
@@ -18,6 +19,7 @@
     "description": "A fully articulated decorative dragon with flexible joints. Printed in soft TPU material for smooth, satisfying movement.",
     "image": "https://placehold.co/600x600/e3f2fd/2d3436?text=Flexi+Dragon",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Decorative",
     "featured": true
   },
@@ -29,6 +31,7 @@
     "description": "Modern geometric planter with integrated drainage. Made from water-resistant PETG, perfect for succulents and small plants.",
     "image": "https://placehold.co/600x600/fce4ec/2d3436?text=Planter+Pot",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Home & Garden",
     "featured": true
   },
@@ -40,6 +43,7 @@
     "description": "Keep your desk tidy with this modular organizer. Features compartments for pens, cards, and small items. Stackable and customizable.",
     "image": "https://placehold.co/600x600/f3e5f5/2d3436?text=Desk+Organizer",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Accessories",
     "featured": true
   },
@@ -51,6 +55,7 @@
     "description": "Set of 4 unique textured coasters with anti-slip base. Each features a different geometric pattern. Heat-resistant PETG material.",
     "image": "https://placehold.co/600x600/fff3e0/2d3436?text=Coaster+Set",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Home & Garden",
     "featured": false
   },
@@ -62,6 +67,7 @@
     "description": "A beautiful lithophane night lamp that reveals a hidden image when illuminated. Includes LED base. Perfect as a personalized gift.",
     "image": "https://placehold.co/600x600/e8eaf6/2d3436?text=Night+Lamp",
     "url": "/",
+    "url": "/product-validation.html",
     "category": "Decorative",
     "featured": false
   }

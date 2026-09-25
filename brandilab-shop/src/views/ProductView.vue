@@ -66,6 +66,7 @@ const recommendedProducts = computed(() => {
               :data-item-id="product.id"
               :data-item-price="product.price"
               :data-item-url="`/product/${product.id}`"
+              data-item-url="/product-validation.html"
               :data-item-description="product.description"
               :data-item-image="product.image"
               :data-item-name="product.name"
