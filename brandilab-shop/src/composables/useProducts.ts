@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { sanity } from '@/sanity'
 import type { Product } from '@/types'
 
 const products = ref<Product[]>([])
@@ -11,13 +12,12 @@ async function fetchProducts() {
   loading.value = true
   error.value = null
   try {
-    const response = await fetch('/catalog.json')
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    products.value = await response.json()
+    const query = '*[_type == "product"] | order(_createdAt desc)'
+    products.value = await sanity.fetch(query)
     fetched = true
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to load products'
-    console.error('Error loading catalog:', e)
+    console.error('Error loading products from Sanity:', e)
   } finally {
     loading.value = false
   }
@@ -39,7 +39,7 @@ export function useProducts() {
   })
 
   function getProductById(id: string): Product | undefined {
-    return products.value.find((p) => p.id === id)
+    return products.value.find((p) => p._id === id)
   }
 
   function filterByMaterial(material: string): Product[] {
@@ -58,7 +58,7 @@ export function useProducts() {
       case 'price-desc':
         return sorted.sort((a, b) => b.price - a.price)
       case 'name-asc':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name))
+        return sorted.sort((a, b) => a.title.localeCompare(b.title))
       default:
         return sorted
     }
@@ -76,4 +76,3 @@ export function useProducts() {
     sortProducts,
   }
 }
-

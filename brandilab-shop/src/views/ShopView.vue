@@ -21,7 +21,7 @@ const filteredAndSortedProducts = computed(() => {
   } else if (sortBy.value === 'price-high') {
     result = [...result].sort((a, b) => b.price - a.price)
   } else if (sortBy.value === 'name') {
-    result = [...result].sort((a, b) => a.name.localeCompare(b.name))
+    result = [...result].sort((a, b) => a.title.localeCompare(b.title))
   }
 
   return result

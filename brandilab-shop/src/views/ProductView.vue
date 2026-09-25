@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useProducts } from '@/composables/useProducts'
+import { urlFor } from '@/sanity'
 import ProductGrid from '@/components/ProductGrid.vue'
 
 const route = useRoute()
@@ -28,7 +29,7 @@ const totalPrice = computed(() => {
 })
 
 const recommendedProducts = computed(() => {
-  return products.value.filter(p => p.id !== productId).slice(0, 4)
+  return products.value.filter(p => p._id !== productId).slice(0, 4)
 })
 </script>
 
@@ -40,16 +41,16 @@ const recommendedProducts = computed(() => {
         <span class="separator">/</span>
         <RouterLink to="/shop">Shop</RouterLink>
         <span class="separator">/</span>
-        <span class="current">{{ product.name }}</span>
+        <span class="current">{{ product.title }}</span>
       </nav>
 
       <div class="product-layout">
         <div class="product-image-container">
-          <img :src="product.image" :alt="product.name" class="product-image" />
+          <img :src="urlFor(product.image).width(600).url()" :alt="product.title" class="product-image" />
         </div>
 
         <div class="product-details">
-          <h1 class="product-name">{{ product.name }}</h1>
+          <h1 class="product-name">{{ product.title }}</h1>
           <div class="product-material">{{ product.material }}</div>
           <div class="product-price">€{{ product.price.toFixed(2) }}</div>
           <p class="product-description">{{ product.description }}</p>
@@ -63,13 +64,12 @@ const recommendedProducts = computed(() => {
             
             <button 
               class="snipcart-add-item btn btn-add"
-              :data-item-id="product.id"
+              :data-item-id="product._id"
               :data-item-price="product.price"
-              :data-item-url="`/product/${product.id}`"
-              data-item-url="/product-validation.html"
+              :data-item-url="`/`"
               :data-item-description="product.description"
-              :data-item-image="product.image"
-              :data-item-name="product.name"
+              :data-item-image="urlFor(product.image).width(100).url()"
+              :data-item-name="product.title"
               :data-item-quantity="quantity"
             >
               Add to Cart - €{{ totalPrice }}

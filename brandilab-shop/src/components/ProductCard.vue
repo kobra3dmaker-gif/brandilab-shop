@@ -1,12 +1,12 @@
 <template>
   <div class="product-card">
-    <router-link :to="`/product/${product.id}`" class="card-link">
+    <router-link :to="`/product/${product._id}`" class="card-link">
       <div class="image-container">
-        <img :src="product.image" :alt="product.name" class="product-image" loading="lazy" />
+        <img :src="urlFor(product.image).width(400).url()" :alt="product.title" class="product-image" loading="lazy" />
       </div>
       <div class="card-content">
         <div class="header">
-          <h3 class="product-name">{{ product.name }}</h3>
+          <h3 class="product-name">{{ product.title }}</h3>
           <span class="material-tag" v-if="product.material">{{ product.material }}</span>
         </div>
         <p class="product-price">€{{ product.price.toFixed(2) }}</p>
@@ -15,13 +15,12 @@
     <div class="card-actions">
       <button
         class="snipcart-add-item add-to-cart-btn"
-        :data-item-id="product.id"
+        :data-item-id="product._id"
         :data-item-price="product.price"
-        :data-item-url="`/product/${product.id}`"
-        data-item-url="/product-validation.html"
+        :data-item-url="`/`"
         :data-item-description="product.description"
-        :data-item-image="product.image"
-        :data-item-name="product.name"
+        :data-item-image="urlFor(product.image).width(100).url()"
+        :data-item-name="product.title"
       >
         Add to Cart
       </button>
@@ -31,6 +30,7 @@
 
 <script setup lang="ts">
 import type { Product } from '@/types'
+import { urlFor } from '@/sanity'
 
 defineProps<{
   product: Product
