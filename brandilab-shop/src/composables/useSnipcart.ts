@@ -15,36 +15,32 @@ const isReady = ref(false)
 
 // Keep track of whether we've already initialized the listeners
 let initialized = false
-let unsubscribeItemAdded: (() => void) | null = null
-let unsubscribeItemRemoved: (() => void) | null = null
-let unsubscribeItemUpdated: (() => void) | null = null
-let unsubscribeOrderCompleted: (() => void) | null = null
 
 function syncCartState() {
   const snipcart = (window as any).Snipcart
   if (!snipcart) return
 
-  const state = snipcart.store.getState()
-  itemCount.value = state.cart.items.count
-  totalPrice.value = state.cart.total.toFixed(2)
+  const cart = snipcart.store.getState().cart
+  itemCount.value = cart?.items?.count ?? 0
+  totalPrice.value = (cart?.total ?? 0).toFixed(2)
 }
 
 function initSnipcart() {
   if (initialized) return
-  initialized = true
 
   const snipcart = (window as any).Snipcart
   if (!snipcart) return
 
+  initialized = true
   isReady.value = true
   syncCartState()
 
-  // Subscribe to cart events to keep our reactive state in sync
-  unsubscribeItemAdded = snipcart.events.on('item.added', syncCartState)
-  unsubscribeItemRemoved = snipcart.events.on('item.removed', syncCartState)
-  unsubscribeItemUpdated = snipcart.events.on('item.updated', syncCartState)
-  unsubscribeOrderCompleted = snipcart.events.on('order.completed', () => {
-    // After a successful order, cart is emptied
+  // Follow every change of Snipcart's cart state (add/remove/quantity, and the fresh empty
+  // cart Snipcart starts after a completed checkout), not just a few individual events
+  snipcart.store.subscribe(syncCartState)
+
+  // Snipcart v3 fires 'cart.confirmed' once an order is paid ('order.completed' was v2)
+  snipcart.events.on('cart.confirmed', () => {
     itemCount.value = 0
     totalPrice.value = '0.00'
   })

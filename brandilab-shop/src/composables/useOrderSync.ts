@@ -16,11 +16,13 @@ let listenerAttached = false
 
 async function pushOrderToSheet(order: any) {
   // Format the items into a comma-separated string
-  const productNames = order.items
+  // (v3 may wrap the list as { items: [...], count }, so accept both shapes)
+  const items: any[] = Array.isArray(order.items) ? order.items : (order.items?.items ?? [])
+  const productNames = items
     .map((item: any) => `${item.name} x${item.quantity}`)
     .join(', ')
 
-  const totalPrice = `€${order.total.toFixed(2)}`
+  const totalPrice = `€${Number(order.total ?? 0).toFixed(2)}`
   const buyerName = `${order.billingAddress?.fullName || order.email || 'Website Order'}`
 
   const shippingAddress = order.shippingAddress
@@ -60,7 +62,8 @@ export function useOrderSync() {
       const snipcart = (window as any).Snipcart
       if (!snipcart) return
 
-      snipcart.events.on('order.completed', (order: any) => {
+      // Snipcart v3 fires 'cart.confirmed' once an order is paid ('order.completed' was v2)
+      snipcart.events.on('cart.confirmed', (order: any) => {
         console.log('[BrandiLab] Order completed:', order)
         pushOrderToSheet(order)
       })
