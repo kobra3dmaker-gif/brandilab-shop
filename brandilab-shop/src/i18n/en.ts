@@ -137,6 +137,13 @@ const en: typeof it = {
     locationLabel: 'Location',
     location: 'Italy',
     rights: '© 2026 BrandiLab. All rights reserved.',
+    cookiePreferences: 'Cookie preferences',
+  },
+  cookies: {
+    title: 'Cookies and statistics',
+    text: 'With your consent we use Google Analytics to understand how the site is used and improve it. No data is collected if you decline.',
+    accept: 'Accept',
+    decline: 'Decline',
   },
 }
 

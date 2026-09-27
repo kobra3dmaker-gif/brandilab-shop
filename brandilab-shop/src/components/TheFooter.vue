@@ -39,7 +39,10 @@
     
     <div class="footer-bottom">
       <div class="footer-container bottom-container">
-        <p class="copyright">{{ t('footer.rights') }}</p>
+        <p class="copyright">
+          {{ t('footer.rights') }}
+          <button v-if="analyticsEnabled" class="cookie-link" @click="reopenBanner">{{ t('footer.cookiePreferences') }}</button>
+        </p>
         <div class="social-links">
           <a href="#" aria-label="Instagram">📸</a>
           <a href="#" aria-label="Twitter">🐦</a>
@@ -53,8 +56,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import logo from '@/assets/logo.webp';
+import { analyticsEnabled, useAnalyticsConsent } from '@/analytics';
 
 const { t } = useI18n();
+const { reopenBanner } = useAnalyticsConsent();
 </script>
 
 <style scoped>
@@ -97,6 +102,21 @@ const { t } = useI18n();
   max-width: none;
   object-fit: contain;
   margin-bottom: 16px;
+}
+
+.cookie-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 12px;
+  color: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cookie-link:hover {
+  color: var(--color-accent);
 }
 
 .footer-brand {

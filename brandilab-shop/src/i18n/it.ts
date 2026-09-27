@@ -136,5 +136,12 @@ export default {
     locationLabel: 'Sede',
     location: 'Italia',
     rights: '© 2026 BrandiLab. Tutti i diritti riservati.',
+    cookiePreferences: 'Preferenze cookie',
+  },
+  cookies: {
+    title: 'Cookie e statistiche',
+    text: 'Con il tuo consenso usiamo Google Analytics per capire come viene usato il sito e migliorarlo. Nessun dato viene raccolto se rifiuti.',
+    accept: 'Accetta',
+    decline: 'Rifiuta',
   },
 }

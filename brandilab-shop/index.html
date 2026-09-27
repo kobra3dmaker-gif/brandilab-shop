@@ -54,6 +54,30 @@
       })()
     </script>
 
+    <!--
+      Google Analytics 4 with Consent Mode (see src/analytics.ts).
+      gtag() has to exist before Snipcart starts, so Snipcart's GA integration sends the
+      e-commerce events (add_to_cart, begin_checkout, purchase…). Until the visitor accepts
+      the cookie banner, gtag.js is not even downloaded: calls just queue up in the page.
+    -->
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() { dataLayer.push(arguments) }
+      ;(function () {
+        var consent = null
+        try { consent = localStorage.getItem('analytics-consent') } catch (e) {}
+        gtag('consent', 'default', {
+          analytics_storage: consent === 'granted' ? 'granted' : 'denied',
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          wait_for_update: 500,
+        })
+      })()
+      gtag('js', new Date())
+      gtag('config', '%VITE_GA_MEASUREMENT_ID%')
+    </script>
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

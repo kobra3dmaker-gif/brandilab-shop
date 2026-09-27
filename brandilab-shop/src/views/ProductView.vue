@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProducts } from '@/composables/useProducts'
 import { urlFor } from '@/sanity'
+import { trackEvent } from '@/analytics'
 import { SNIPCART_PRODUCTS_URL } from '@/snipcart'
 import ProductGrid from '@/components/ProductGrid.vue'
 
@@ -11,10 +12,29 @@ const route = useRoute()
 const { t, n } = useI18n()
 const { getProductById, products } = useProducts()
 
-const productId = route.params.id as string
-const product = computed(() => getProductById(productId))
+// Follow the URL: Vue Router reuses this component when going from one product to another
+// (e.g. via "You may also like"), so a one-time read would keep showing the first product
+const productId = computed(() => route.params.id as string)
+const product = computed(() => getProductById(productId.value))
 
 const quantity = ref(1)
+watch(productId, () => {
+  quantity.value = 1
+})
+
+// GA4 funnel step before add_to_cart (which Snipcart sends itself, with the same item ids)
+watch(
+  product,
+  (p) => {
+    if (!p) return
+    trackEvent('view_item', {
+      currency: 'EUR',
+      value: p.price,
+      items: [{ item_id: p._id, item_name: p.title, price: p.price }],
+    })
+  },
+  { immediate: true },
+)
 
 const decreaseQuantity = () => {
   if (quantity.value > 1) quantity.value--
@@ -27,7 +47,7 @@ const increaseQuantity = () => {
 const totalPrice = computed(() => (product.value ? product.value.price * quantity.value : 0))
 
 const recommendedProducts = computed(() => {
-  return products.value.filter(p => p._id !== productId).slice(0, 4)
+  return products.value.filter(p => p._id !== productId.value).slice(0, 4)
 })
 </script>
 
