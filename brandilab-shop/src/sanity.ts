@@ -1,11 +1,10 @@
 import { createClient } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
+import { sanityConfig } from './sanityConfig'
 
 export const sanity = createClient({
-  projectId: 'aslz605n',
-  dataset: 'production',
+  ...sanityConfig,
   useCdn: true, // Usa la CDN globale superveloce per servire i JSON
-  apiVersion: '2023-05-03',
 })
 
 const builder = imageUrlBuilder(sanity)

@@ -17,7 +17,7 @@
         class="snipcart-add-item add-to-cart-btn"
         :data-item-id="product._id"
         :data-item-price="product.price"
-        :data-item-url="`/`"
+        :data-item-url="SNIPCART_PRODUCTS_URL"
         :data-item-description="product.description"
         :data-item-image="urlFor(product.image).width(100).url()"
         :data-item-name="product.title"
@@ -32,6 +32,7 @@
 import type { Product } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { urlFor } from '@/sanity'
+import { SNIPCART_PRODUCTS_URL } from '@/snipcart'
 
 defineProps<{
   product: Product

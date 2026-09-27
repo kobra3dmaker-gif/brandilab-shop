@@ -9,6 +9,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Sent by a Sanity webhook when products change, so the build regenerates
+  # snipcart-products.json (the prices Snipcart validates orders against)
+  repository_dispatch:
+    types: ['sanity-content-changed']
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
