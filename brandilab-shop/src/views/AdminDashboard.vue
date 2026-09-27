@@ -443,7 +443,7 @@ function logout() {
 </script>
 
 <template>
-  <main class="admin-page">
+  <main class="admin-page theme-light">
     <div class="admin-container">
 
       <!-- Header -->
@@ -998,7 +998,7 @@ function logout() {
     </div>
   </main>
   <!-- MODALE NUOVO ORDINE -->
-<div v-if="showAddModal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+<div v-if="showAddModal" class="modal-overlay theme-light" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
   <div class="modal-content" style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%;">
     <h3 style="margin-bottom: 16px;">Aggiungi Nuovo Ordine</h3>
     

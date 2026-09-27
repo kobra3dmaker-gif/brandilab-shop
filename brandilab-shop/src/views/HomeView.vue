@@ -4,17 +4,17 @@ import { RouterLink } from 'vue-router'
 import TheHero from '@/components/TheHero.vue'
 import ProductGrid from '@/components/ProductGrid.vue'
 
-const { featuredProducts } = useProducts()
+const { products, loading } = useProducts()
 </script>
 
 <template>
   <main class="home-view">
     <TheHero />
-    
+
     <section class="section featured-section">
       <div class="container">
-        <h2 class="section-title">Featured Products</h2>
-        <ProductGrid :products="featuredProducts" />
+        <h2 class="section-title">Our Products</h2>
+        <ProductGrid :products="products" :loading="loading" />
       </div>
     </section>
 

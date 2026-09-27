@@ -2,9 +2,18 @@
    BrandiLab Design System
    ============================================ */
 
-:root {
+/*
+ * Theme colors. The theme is set as data-theme="light|dark" on <html> by the inline
+ * script in index.html (follows the OS/browser setting unless the visitor picked one
+ * with the navbar toggle — see composables/useTheme.ts).
+ * `.theme-light` forces the light palette on a subtree (used by the admin dashboard).
+ */
+:root,
+.theme-light {
+  color-scheme: light;
+
   /* Colors */
-  --color-primary: #1a1a2e;
+  --color-primary: #1a1a2e; /* headings / emphasized text */
   --color-primary-light: #2d2d44;
   --color-accent: #16a085;
   --color-accent-hover: #138d75;
@@ -18,13 +27,56 @@
   --color-border-light: #f0f0f0;
   --color-danger: #e74c3c;
   --color-success: #27ae60;
+  --color-skeleton: #e2e8f0;
+  --color-navbar-bg: rgba(255, 255, 255, 0.95);
+
+  /* Brand navy used as a background (hero, footer, banners) — stays dark in both themes */
+  --color-brand-dark: #1a1a2e;
+  --color-brand-dark-hover: #2d2d44;
+  --color-on-dark: #ffffff;
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-primary: #f1f3f5;
+  --color-primary-light: #dfe3e8;
+  --color-accent: #16a085;
+  --color-accent-hover: #1abc9c;
+  --color-accent-light: rgba(26, 188, 156, 0.15);
+  --color-bg: #0f1115;
+  --color-surface: #1a1d23;
+  --color-text: #e4e6eb;
+  --color-text-light: #a0a7b0;
+  --color-text-muted: #6b7280;
+  --color-border: #2e323a;
+  --color-border-light: #23272e;
+  --color-danger: #ff6b5b;
+  --color-success: #2ecc71;
+  --color-skeleton: #2a2e36;
+  --color-navbar-bg: rgba(26, 29, 35, 0.92);
+
+  --color-brand-dark: #1a1a2e;
+  --color-brand-dark-hover: #2d2d44;
+  --color-on-dark: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.theme-light {
+  color: var(--color-text);
+}
+
+:root {
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -72,6 +124,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Keep the Snipcart cart below the fixed navbar so its "Continue shopping" header stays visible */
+.snipcart-modal__container {
+  top: var(--navbar-height);
+}
+
 body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
@@ -105,6 +162,7 @@ textarea,
 select {
   font-family: inherit;
   font-size: inherit;
+  color: inherit;
 }
 
 ul,
@@ -182,12 +240,12 @@ ol {
 }
 
 .btn-dark {
-  background: var(--color-primary);
-  color: white;
+  background: var(--color-brand-dark);
+  color: var(--color-on-dark);
 }
 
 .btn-dark:hover {
-  background: var(--color-primary-light);
+  background: var(--color-brand-dark-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

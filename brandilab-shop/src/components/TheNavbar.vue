@@ -2,7 +2,10 @@
   <header class="navbar" :class="{ 'scrolled': isScrolled }">
     <div class="navbar-container">
       <div class="brand">
-        <RouterLink class="brand-link" to="/">BrandiLab</RouterLink>
+        <RouterLink class="brand-link" to="/">
+          <img class="brand-logo" :src="logo" alt="" width="60" height="60">
+          BrandiLab
+        </RouterLink>
       </div>
       
       <nav class="desktop-nav">
@@ -13,7 +16,24 @@
       </nav>
 
       <div class="actions">
-        <button class="snipcart-checkout cart-btn" @click.prevent="openCart" aria-label="Cart">
+        <button
+          class="theme-btn"
+          @click="toggleTheme"
+          :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        >
+          <!-- Sun (shown in dark mode) -->
+          <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <!-- Moon (shown in light mode) -->
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button class="cart-btn" @click.prevent="openCart" aria-label="Cart">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
@@ -46,8 +66,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useSnipcart } from '@/composables/useSnipcart';
+import { useTheme } from '@/composables/useTheme';
+import logo from '@/assets/logo.webp';
 
 const { itemCount, openCart } = useSnipcart();
+const { isDark, toggleTheme } = useTheme();
 
 const isScrolled = ref(false);
 const isMenuOpen = ref(false);
@@ -80,7 +103,7 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: var(--navbar-height, 72px);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: var(--color-navbar-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
@@ -110,6 +133,21 @@ onUnmounted(() => {
   color: var(--color-primary, #1a1a2e);
   text-decoration: none;
   letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand {
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 60px;
+  height: 60px;
+  max-width: none; /* override the global img max-width so it never gets squashed */
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .desktop-nav {
@@ -154,6 +192,27 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.theme-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+}
+
+.theme-btn:hover {
+  color: var(--color-accent);
+}
+
+.theme-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .cart-btn {

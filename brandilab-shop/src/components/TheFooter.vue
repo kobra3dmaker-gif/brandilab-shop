@@ -3,6 +3,7 @@
     <div class="footer-container">
       <div class="footer-grid">
         <div class="footer-col brand-col">
+          <img class="footer-logo" :src="logo" alt="BrandiLab — Servizi di stampa 3D" width="112" height="112" loading="lazy">
           <h3 class="footer-brand">BrandiLab</h3>
           <p class="footer-text">
             Precision 3D printing for unique designs. We bring imagination to reality with high-quality materials and craftsmanship.
@@ -52,13 +53,13 @@
 </template>
 
 <script setup lang="ts">
-// Footer component logic
+import logo from '@/assets/logo.webp';
 </script>
 
 <style scoped>
 .footer {
-  background-color: var(--color-primary, #1a1a2e);
-  color: var(--color-surface, #ffffff);
+  background-color: var(--color-brand-dark);
+  color: var(--color-on-dark);
   font-family: var(--font-family, sans-serif);
   padding-top: 64px;
 }
@@ -88,11 +89,20 @@
   }
 }
 
+.footer-logo {
+  display: block;
+  width: 112px;
+  height: 112px;
+  max-width: none;
+  object-fit: contain;
+  margin-bottom: 16px;
+}
+
 .footer-brand {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0 0 16px 0;
-  color: var(--color-surface, #ffffff);
+  color: var(--color-on-dark);
 }
 
 .footer-text {
@@ -106,7 +116,7 @@
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: var(--color-surface, #ffffff);
+  color: var(--color-on-dark);
 }
 
 .footer-nav {
@@ -189,6 +199,6 @@
 
 .social-links a:hover {
   transform: translateY(-2px);
-  color: var(--color-surface, #ffffff);
+  color: var(--color-on-dark);
 }
 </style>

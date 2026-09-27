@@ -51,7 +51,7 @@ const recommendedProducts = computed(() => {
 
         <div class="product-details">
           <h1 class="product-name">{{ product.title }}</h1>
-          <div class="product-material">{{ product.material }}</div>
+          <div class="product-material" v-if="product.material">{{ product.material }}</div>
           <div class="product-price">€{{ product.price.toFixed(2) }}</div>
           <p class="product-description">{{ product.description }}</p>
 

@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary, #1a1a2e) 0%, var(--color-accent, #16a085) 100%);
+  background: linear-gradient(135deg, var(--color-brand-dark) 0%, var(--color-accent, #16a085) 100%);
   overflow: hidden;
   padding: 40px 24px;
 }
@@ -45,7 +45,7 @@
 
 .hero-title {
   font-family: var(--font-family, sans-serif);
-  color: var(--color-surface, #ffffff);
+  color: var(--color-on-dark);
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
   margin: 0;
@@ -65,8 +65,8 @@
 
 .hero-btn {
   display: inline-block;
-  background-color: var(--color-surface, #ffffff);
-  color: var(--color-primary, #1a1a2e);
+  background-color: var(--color-on-dark);
+  color: var(--color-brand-dark);
   font-family: var(--font-family, sans-serif);
   font-size: 1.125rem;
   font-weight: 600;

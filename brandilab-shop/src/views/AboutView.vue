@@ -88,7 +88,7 @@
 }
 
 .about-header {
-  background-color: var(--color-primary);
+  background-color: var(--color-brand-dark);
   color: white;
   padding: 6rem 1rem;
   text-align: center;
@@ -225,7 +225,7 @@
 }
 
 .mission-box {
-  background-color: var(--color-primary);
+  background-color: var(--color-brand-dark);
   color: white;
   padding: 4rem 2rem;
   border-radius: var(--radius-lg);

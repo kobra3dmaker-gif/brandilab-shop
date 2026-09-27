@@ -90,7 +90,7 @@ withDefaults(defineProps<{
 
 .skeleton-image {
   aspect-ratio: 1 / 1;
-  background-color: #e2e8f0;
+  background-color: var(--color-skeleton);
   animation: pulse 1.5s infinite ease-in-out;
 }
 
@@ -105,7 +105,7 @@ withDefaults(defineProps<{
 .skeleton-title {
   height: 1.25rem;
   width: 75%;
-  background-color: #e2e8f0;
+  background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
 }
@@ -113,7 +113,7 @@ withDefaults(defineProps<{
 .skeleton-price {
   height: 1.5rem;
   width: 40%;
-  background-color: #e2e8f0;
+  background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
   margin-top: auto;
@@ -122,7 +122,7 @@ withDefaults(defineProps<{
 .skeleton-button {
   height: 2.5rem;
   width: 100%;
-  background-color: #e2e8f0;
+  background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
 }

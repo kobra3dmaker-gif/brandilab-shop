@@ -5,7 +5,7 @@ export interface Product {
   title: string
   slug?: { current: string }
   price: number
-  material: string
+  material?: string
   description: string
   image: SanityImageSource
   category?: string
