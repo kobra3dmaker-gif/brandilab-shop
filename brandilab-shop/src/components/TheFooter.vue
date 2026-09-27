@@ -3,37 +3,35 @@
     <div class="footer-container">
       <div class="footer-grid">
         <div class="footer-col brand-col">
-          <img class="footer-logo" :src="logo" alt="BrandiLab — Servizi di stampa 3D" width="112" height="112" loading="lazy">
+          <img class="footer-logo" :src="logo" :alt="t('footer.logoAlt')" width="112" height="112" loading="lazy">
           <h3 class="footer-brand">BrandiLab</h3>
-          <p class="footer-text">
-            Precision 3D printing for unique designs. We bring imagination to reality with high-quality materials and craftsmanship.
-          </p>
+          <p class="footer-text">{{ t('footer.tagline') }}</p>
         </div>
         
         <div class="footer-col">
-          <h4 class="col-title">Quick Links</h4>
+          <h4 class="col-title">{{ t('footer.quickLinks') }}</h4>
           <nav class="footer-nav">
-            <RouterLink to="/">Home</RouterLink>
-            <RouterLink to="/shop">Shop</RouterLink>
-            <RouterLink to="/about">About</RouterLink>
-            <RouterLink to="/contact">Contact</RouterLink>
+            <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
+            <RouterLink to="/shop">{{ t('nav.shop') }}</RouterLink>
+            <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
+            <RouterLink to="/contact">{{ t('nav.contact') }}</RouterLink>
           </nav>
         </div>
 
         <div class="footer-col">
-          <h4 class="col-title">About</h4>
+          <h4 class="col-title">{{ t('footer.aboutTitle') }}</h4>
           <nav class="footer-nav">
-            <RouterLink to="/about#story">Our Story</RouterLink>
-            <RouterLink to="/about#materials">Materials</RouterLink>
-            <RouterLink to="/faq">FAQ</RouterLink>
+            <RouterLink to="/about#story">{{ t('footer.ourStory') }}</RouterLink>
+            <RouterLink to="/about#materials">{{ t('footer.materials') }}</RouterLink>
+            <RouterLink to="/faq">{{ t('footer.faq') }}</RouterLink>
           </nav>
         </div>
 
         <div class="footer-col">
-          <h4 class="col-title">Contact</h4>
+          <h4 class="col-title">{{ t('footer.contactTitle') }}</h4>
           <address class="footer-address">
-            <p>Email: <a href="mailto:brandilab@pecsicura.com">brandilab@pecsicura.com</a></p>
-            <p>Location: Italy</p>
+            <p>{{ t('footer.emailLabel') }}: <a href="mailto:brandilab@pecsicura.com">brandilab@pecsicura.com</a></p>
+            <p>{{ t('footer.locationLabel') }}: {{ t('footer.location') }}</p>
           </address>
         </div>
       </div>
@@ -41,7 +39,7 @@
     
     <div class="footer-bottom">
       <div class="footer-container bottom-container">
-        <p class="copyright">© 2026 BrandiLab. All rights reserved.</p>
+        <p class="copyright">{{ t('footer.rights') }}</p>
         <div class="social-links">
           <a href="#" aria-label="Instagram">📸</a>
           <a href="#" aria-label="Twitter">🐦</a>
@@ -53,7 +51,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import logo from '@/assets/logo.webp';
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

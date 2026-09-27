@@ -3,6 +3,7 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { i18n } from './i18n'
 
 // Patch History API to prevent Snipcart from corrupting Vue Router's history state.
 // Snipcart writes entries without Vue Router's state, so we carry the current state over,
@@ -31,5 +32,6 @@ history.replaceState = function (state, title, url) {
 const app = createApp(App)
 
 app.use(router)
+app.use(i18n)
 
 app.mount('#app')

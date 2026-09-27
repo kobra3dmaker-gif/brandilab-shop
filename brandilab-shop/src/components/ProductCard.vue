@@ -9,7 +9,7 @@
           <h3 class="product-name">{{ product.title }}</h3>
           <span class="material-tag" v-if="product.material">{{ product.material }}</span>
         </div>
-        <p class="product-price">€{{ product.price.toFixed(2) }}</p>
+        <p class="product-price">{{ n(product.price, 'currency') }}</p>
       </div>
     </router-link>
     <div class="card-actions">
@@ -22,7 +22,7 @@
         :data-item-image="urlFor(product.image).width(100).url()"
         :data-item-name="product.title"
       >
-        Add to Cart
+        {{ t('product.addToCart') }}
       </button>
     </div>
   </div>
@@ -30,11 +30,14 @@
 
 <script setup lang="ts">
 import type { Product } from '@/types'
+import { useI18n } from 'vue-i18n'
 import { urlFor } from '@/sanity'
 
 defineProps<{
   product: Product
 }>()
+
+const { t, n } = useI18n()
 </script>
 
 <style scoped>

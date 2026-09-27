@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProducts } from '@/composables/useProducts'
 import { urlFor } from '@/sanity'
 import ProductGrid from '@/components/ProductGrid.vue'
 
 const route = useRoute()
+const { t, n } = useI18n()
 const { getProductById, products } = useProducts()
 
 const productId = route.params.id as string
@@ -21,12 +23,7 @@ const increaseQuantity = () => {
   quantity.value++
 }
 
-const totalPrice = computed(() => {
-  if (product.value) {
-    return (product.value.price * quantity.value).toFixed(2)
-  }
-  return '0.00'
-})
+const totalPrice = computed(() => (product.value ? product.value.price * quantity.value : 0))
 
 const recommendedProducts = computed(() => {
   return products.value.filter(p => p._id !== productId).slice(0, 4)
@@ -37,9 +34,9 @@ const recommendedProducts = computed(() => {
   <main class="product-view">
     <div class="container" v-if="product">
       <nav class="breadcrumb">
-        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
         <span class="separator">/</span>
-        <RouterLink to="/shop">Shop</RouterLink>
+        <RouterLink to="/shop">{{ t('nav.shop') }}</RouterLink>
         <span class="separator">/</span>
         <span class="current">{{ product.title }}</span>
       </nav>
@@ -52,14 +49,14 @@ const recommendedProducts = computed(() => {
         <div class="product-details">
           <h1 class="product-name">{{ product.title }}</h1>
           <div class="product-material" v-if="product.material">{{ product.material }}</div>
-          <div class="product-price">€{{ product.price.toFixed(2) }}</div>
+          <div class="product-price">{{ n(product.price, 'currency') }}</div>
           <p class="product-description">{{ product.description }}</p>
 
           <div class="purchase-actions">
             <div class="quantity-selector">
-              <button class="qty-btn" @click="decreaseQuantity">-</button>
+              <button class="qty-btn" @click="decreaseQuantity" :aria-label="t('product.decrease')">-</button>
               <span class="qty-display">{{ quantity }}</span>
-              <button class="qty-btn" @click="increaseQuantity">+</button>
+              <button class="qty-btn" @click="increaseQuantity" :aria-label="t('product.increase')">+</button>
             </div>
             
             <button 
@@ -72,21 +69,21 @@ const recommendedProducts = computed(() => {
               :data-item-name="product.title"
               :data-item-quantity="quantity"
             >
-              Add to Cart - €{{ totalPrice }}
+              {{ t('product.addToCartTotal', { price: n(totalPrice, 'currency') }) }}
             </button>
           </div>
         </div>
       </div>
 
       <section class="recommended-section" v-if="recommendedProducts.length > 0">
-        <h2 class="section-title">You May Also Like</h2>
+        <h2 class="section-title">{{ t('product.youMayAlsoLike') }}</h2>
         <ProductGrid :products="recommendedProducts" />
       </section>
     </div>
     
     <div class="container not-found" v-else>
-      <h2>Product not found</h2>
-      <RouterLink to="/shop" class="btn btn-primary">Back to Shop</RouterLink>
+      <h2>{{ t('product.notFound') }}</h2>
+      <RouterLink to="/shop" class="btn btn-primary">{{ t('product.backToShop') }}</RouterLink>
     </div>
   </main>
 </template>

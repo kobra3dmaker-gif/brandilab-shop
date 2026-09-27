@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useSnipcart } from '@/composables/useSnipcart'
 
 const { isReady } = useSnipcart()
+const { t } = useI18n()
 
 const orderToken = ref<string | null>(null)
 const orderNumber = ref<string | null>(null)
@@ -27,24 +29,24 @@ onMounted(() => {
     <div class="container">
       <div class="confirmation-card">
         <div class="success-icon">✓</div>
-        <h1 class="title">Order Confirmed!</h1>
-        <p class="subtitle">Thank you for your purchase from BrandiLab</p>
+        <h1 class="title">{{ t('order.title') }}</h1>
+        <p class="subtitle">{{ t('order.subtitle') }}</p>
 
         <div class="order-info" v-if="orderNumber">
           <div class="info-row">
-            <span class="label">Order Number</span>
+            <span class="label">{{ t('order.orderNumber') }}</span>
             <span class="value">{{ orderNumber }}</span>
           </div>
         </div>
 
         <div class="details-box">
-          <p>We've received your order and will begin preparing your 3D printed creation right away.</p>
-          <p>You'll receive a confirmation email with tracking information once your order ships.</p>
+          <p>{{ t('order.details1') }}</p>
+          <p>{{ t('order.details2') }}</p>
         </div>
 
         <div class="actions">
-          <RouterLink to="/shop" class="btn btn-primary">Continue Shopping</RouterLink>
-          <RouterLink to="/" class="btn btn-outline">Back to Home</RouterLink>
+          <RouterLink to="/shop" class="btn btn-primary">{{ t('order.continueShopping') }}</RouterLink>
+          <RouterLink to="/" class="btn btn-outline">{{ t('order.backHome') }}</RouterLink>
         </div>
       </div>
     </div>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProducts, type SortOption } from '@/composables/useProducts'
 import ProductGrid from '@/components/ProductGrid.vue'
 
 const { products, loading, materials, filterByMaterial, sortProducts } = useProducts()
+const { t } = useI18n()
 
 const selectedMaterial = ref<string>('All')
 const sortBy = ref<SortOption>('default')
@@ -19,12 +21,12 @@ const filteredAndSortedProducts = computed(() =>
     <div class="container">
       <header class="page-header">
         <nav class="breadcrumb">
-          <RouterLink to="/">Home</RouterLink>
+          <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
           <span class="separator">/</span>
-          <span class="current">Shop</span>
+          <span class="current">{{ t('nav.shop') }}</span>
         </nav>
-        <h1 class="title">Our Products</h1>
-        <p class="subtitle">Browse our collection of 3D printed creations</p>
+        <h1 class="title">{{ t('shop.title') }}</h1>
+        <p class="subtitle">{{ t('shop.subtitle') }}</p>
       </header>
 
       <div class="filters-row">
@@ -37,16 +39,16 @@ const filteredAndSortedProducts = computed(() =>
             :class="{ active: selectedMaterial === material }"
             @click="selectedMaterial = material"
           >
-            {{ material }}
+            {{ material === 'All' ? t('shop.all') : material }}
           </button>
         </div>
 
         <div class="sort-filter">
-          <select v-model="sortBy" class="sort-select">
-            <option value="default">Sort by: Default</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="name-asc">Name: A-Z</option>
+          <select v-model="sortBy" class="sort-select" :aria-label="t('shop.sortLabel')">
+            <option value="default">{{ t('shop.sortDefault') }}</option>
+            <option value="price-asc">{{ t('shop.sortPriceAsc') }}</option>
+            <option value="price-desc">{{ t('shop.sortPriceDesc') }}</option>
+            <option value="name-asc">{{ t('shop.sortNameAsc') }}</option>
           </select>
         </div>
       </div>

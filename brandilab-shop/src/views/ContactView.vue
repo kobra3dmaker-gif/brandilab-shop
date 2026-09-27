@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const form = ref({
   name: '',
@@ -11,20 +14,8 @@ const form = ref({
 const isSubmitted = ref(false)
 const openFaqIndex = ref<number | null>(null)
 
-const faqs = [
-  {
-    question: 'What materials do you use?',
-    answer: 'We primarily use PLA, TPU, and PETG depending on the product requirements. PLA is our go-to for eco-friendly, detailed prints, while TPU offers flexibility and PETG provides enhanced strength.'
-  },
-  {
-    question: 'How long does shipping take?',
-    answer: 'Orders are typically processed within 2-3 business days. Standard shipping within Italy takes 2-4 days, while international shipping can take 7-14 days depending on the destination.'
-  },
-  {
-    question: 'Can I request custom designs?',
-    answer: 'Absolutely! Contact us with your idea using the form above or via email, and we will get back to you to discuss feasibility, pricing, and timelines.'
-  }
-]
+// Keys under contact.faqs in src/i18n/{it,en}.ts
+const faqs = ['materials', 'shipping', 'custom'] as const
 
 const submitForm = () => {
   isSubmitted.value = true
@@ -44,78 +35,78 @@ const toggleFaq = (index: number) => {
   <main class="contact-view">
     <div class="container">
       <header class="page-header">
-        <h1 class="title">Get in Touch</h1>
-        <p class="subtitle">We'd love to hear from you. Send us a message!</p>
+        <h1 class="title">{{ t('contact.title') }}</h1>
+        <p class="subtitle">{{ t('contact.subtitle') }}</p>
       </header>
 
       <div class="contact-layout">
         <div class="contact-form-container">
           <div v-if="isSubmitted" class="success-message">
-            <h3>Thank you!</h3>
-            <p>Your message has been sent. We'll get back to you shortly.</p>
+            <h3>{{ t('contact.thanksTitle') }}</h3>
+            <p>{{ t('contact.thanksText') }}</p>
           </div>
           
           <form v-else @submit.prevent="submitForm" class="contact-form">
             <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" v-model="form.name" required placeholder="Your name" />
+              <label for="name">{{ t('contact.nameLabel') }}</label>
+              <input type="text" id="name" v-model="form.name" required :placeholder="t('contact.namePlaceholder')" />
             </div>
             
             <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" v-model="form.email" required placeholder="Your email address" />
+              <label for="email">{{ t('contact.emailLabel') }}</label>
+              <input type="email" id="email" v-model="form.email" required :placeholder="t('contact.emailPlaceholder')" />
             </div>
             
             <div class="form-group">
-              <label for="subject">Subject</label>
-              <input type="text" id="subject" v-model="form.subject" required placeholder="What is this regarding?" />
+              <label for="subject">{{ t('contact.subjectLabel') }}</label>
+              <input type="text" id="subject" v-model="form.subject" required :placeholder="t('contact.subjectPlaceholder')" />
             </div>
             
             <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" v-model="form.message" required rows="5" placeholder="How can we help you?"></textarea>
+              <label for="message">{{ t('contact.messageLabel') }}</label>
+              <textarea id="message" v-model="form.message" required rows="5" :placeholder="t('contact.messagePlaceholder')"></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary">Send Message</button>
+            <button type="submit" class="btn btn-primary">{{ t('contact.send') }}</button>
           </form>
         </div>
 
         <div class="contact-info">
           <div class="info-card">
             <div class="info-icon">✉️</div>
-            <h3>Email</h3>
+            <h3>{{ t('contact.emailTitle') }}</h3>
             <p>brandilab@pecsicura.com</p>
           </div>
           
           <div class="info-card">
             <div class="info-icon">📍</div>
-            <h3>Location</h3>
-            <p>Italy</p>
+            <h3>{{ t('contact.locationTitle') }}</h3>
+            <p>{{ t('contact.location') }}</p>
           </div>
           
           <div class="info-card">
             <div class="info-icon">⏱️</div>
-            <h3>Response Time</h3>
-            <p>Within 24 hours</p>
+            <h3>{{ t('contact.responseTitle') }}</h3>
+            <p>{{ t('contact.response') }}</p>
           </div>
         </div>
       </div>
 
       <section class="faq-section">
-        <h2 class="section-title">Frequently Asked Questions</h2>
+        <h2 class="section-title">{{ t('contact.faqTitle') }}</h2>
         <div class="faq-accordion">
           <div 
             v-for="(faq, index) in faqs" 
-            :key="index"
+            :key="faq"
             class="faq-item"
             :class="{ active: openFaqIndex === index }"
           >
             <button class="faq-question" @click="toggleFaq(index)">
-              {{ faq.question }}
+              {{ t(`contact.faqs.${faq}.question`) }}
               <span class="faq-icon">{{ openFaqIndex === index ? '−' : '+' }}</span>
             </button>
             <div class="faq-answer" v-show="openFaqIndex === index">
-              <p>{{ faq.answer }}</p>
+              <p>{{ t(`contact.faqs.${faq}.answer`) }}</p>
             </div>
           </div>
         </div>

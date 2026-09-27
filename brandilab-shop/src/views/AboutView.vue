@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
   <main class="about-view">
     <header class="about-header">
       <div class="container">
-        <h1 class="title">About BrandiLab</h1>
-        <p class="subtitle">Crafting the future, one layer at a time.</p>
+        <h1 class="title">{{ t('about.title') }}</h1>
+        <p class="subtitle">{{ t('about.subtitle') }}</p>
       </div>
     </header>
 
@@ -14,17 +17,13 @@
       <div class="container">
         <div class="story-grid">
           <div class="story-text">
-            <h2>Our Story</h2>
-            <p>
-              Based in the heart of Italy, BrandiLab is a passionate 3D printing studio dedicated to transforming digital concepts into physical realities. What started as a fascination with additive manufacturing has grown into a specialized service creating unique, high-quality products.
-            </p>
-            <p>
-              We believe that good design should be accessible, sustainable, and crafted with care. Whether it's functional tools, aesthetic home decor, or custom parts, we approach every print with the same level of dedication and precision.
-            </p>
+            <h2>{{ t('about.storyTitle') }}</h2>
+            <p>{{ t('about.story1') }}</p>
+            <p>{{ t('about.story2') }}</p>
           </div>
           <div class="story-image">
             <div class="image-placeholder">
-              <span>Studio Image</span>
+              <span>{{ t('about.studioImage') }}</span>
             </div>
           </div>
         </div>
@@ -33,27 +32,27 @@
 
     <section class="section process-section">
       <div class="container">
-        <h2 class="section-title">Our Process</h2>
+        <h2 class="section-title">{{ t('about.processTitle') }}</h2>
         <div class="process-steps">
           <div class="step-card">
             <div class="step-number">1</div>
             <div class="step-icon">✏️</div>
-            <h3>Design</h3>
-            <p>We design each product digitally with precision CAD tools</p>
+            <h3>{{ t('about.designTitle') }}</h3>
+            <p>{{ t('about.designText') }}</p>
           </div>
           <div class="step-connector"></div>
           <div class="step-card">
             <div class="step-number">2</div>
             <div class="step-icon">🖨️</div>
-            <h3>Print</h3>
-            <p>Printed layer by layer using premium materials on pro-grade printers</p>
+            <h3>{{ t('about.printTitle') }}</h3>
+            <p>{{ t('about.printText') }}</p>
           </div>
           <div class="step-connector"></div>
           <div class="step-card">
             <div class="step-number">3</div>
             <div class="step-icon">📦</div>
-            <h3>Ship</h3>
-            <p>Quality checked and carefully packaged for delivery</p>
+            <h3>{{ t('about.shipTitle') }}</h3>
+            <p>{{ t('about.shipText') }}</p>
           </div>
         </div>
       </div>
@@ -62,10 +61,8 @@
     <section class="section values-section">
       <div class="container">
         <div class="mission-box">
-          <h2>Our Mission</h2>
-          <p>
-            To provide innovative, durable, and sustainable 3D printed solutions that inspire creativity and solve everyday problems, while maintaining the highest standards of craftsmanship and environmental responsibility.
-          </p>
+          <h2>{{ t('about.missionTitle') }}</h2>
+          <p>{{ t('about.mission') }}</p>
         </div>
       </div>
     </section>

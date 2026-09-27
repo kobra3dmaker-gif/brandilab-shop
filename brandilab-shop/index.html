@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BrandiLab — Premium 3D printed creations handcrafted with precision. Shop unique smartphone stands, decorative figures, planters, and more.">
-    <title>BrandiLab — 3D Printed Creations</title>
+    <meta name="description" content="BrandiLab — Creazioni stampate in 3D di alta qualità, realizzate con precisione. Scopri supporti per smartphone, statuine decorative, vasi e molto altro.">
+    <title>BrandiLab — Creazioni stampate in 3D</title>
     <meta name="color-scheme" content="light dark">
 
     <!-- Icons & app manifest -->
@@ -17,15 +17,17 @@
     <!-- Social sharing (Open Graph / Twitter) -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BrandiLab">
-    <meta property="og:title" content="BrandiLab — 3D Printed Creations">
-    <meta property="og:description" content="Premium 3D printed creations handcrafted with precision.">
+    <meta property="og:title" content="BrandiLab — Creazioni stampate in 3D">
+    <meta property="og:description" content="Creazioni stampate in 3D di alta qualità, realizzate con precisione.">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:locale:alternate" content="en_GB">
     <meta property="og:url" content="https://brandilab.it/">
     <meta property="og:image" content="https://brandilab.it/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
 
-    <!-- Apply the light/dark theme before the first paint (kept in sync by src/composables/useTheme.ts) -->
+    <!-- Apply the light/dark theme and the language before the first paint (theme kept in sync by src/composables/useTheme.ts) -->
     <script>
       (function () {
         var theme = null
@@ -34,6 +36,21 @@
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         }
         document.documentElement.dataset.theme = theme
+      })()
+
+      // Language (kept in sync by src/i18n/index.ts): saved choice → browser language → Italian
+      ;(function () {
+        var lang = null
+        try { lang = localStorage.getItem('locale') } catch (e) {}
+        if (lang !== 'it' && lang !== 'en') {
+          lang = 'it'
+          var preferred = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]
+          for (var i = 0; i < preferred.length; i++) {
+            var base = String(preferred[i] || '').toLowerCase().split('-')[0]
+            if (base === 'it' || base === 'en') { lang = base; break }
+          }
+        }
+        document.documentElement.lang = lang
       })()
     </script>
 

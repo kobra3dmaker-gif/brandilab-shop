@@ -4,23 +4,38 @@
       <div class="brand">
         <RouterLink class="brand-link" to="/">
           <img class="brand-logo" :src="logo" alt="" width="60" height="60">
-          BrandiLab
+          <span class="brand-name">BrandiLab</span>
         </RouterLink>
       </div>
       
       <nav class="desktop-nav">
-        <RouterLink to="/" class="nav-link" active-class="active">Home</RouterLink>
-        <RouterLink to="/shop" class="nav-link" active-class="active">Shop</RouterLink>
-        <RouterLink to="/about" class="nav-link" active-class="active">About</RouterLink>
-        <RouterLink to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
+        <RouterLink to="/" class="nav-link" active-class="active">{{ t('nav.home') }}</RouterLink>
+        <RouterLink to="/shop" class="nav-link" active-class="active">{{ t('nav.shop') }}</RouterLink>
+        <RouterLink to="/about" class="nav-link" active-class="active">{{ t('nav.about') }}</RouterLink>
+        <RouterLink to="/contact" class="nav-link" active-class="active">{{ t('nav.contact') }}</RouterLink>
       </nav>
 
       <div class="actions">
+        <div class="lang-switch" role="group" :aria-label="t('nav.language')">
+          <button
+            v-for="code in SUPPORTED_LOCALES"
+            :key="code"
+            class="lang-btn"
+            :class="{ active: locale === code }"
+            :aria-pressed="locale === code"
+            :lang="code"
+            :title="LOCALE_NAMES[code]"
+            @click="setLocale(code)"
+          >
+            {{ code.toUpperCase() }}
+          </button>
+        </div>
+
         <button
           class="theme-btn"
           @click="toggleTheme"
-          :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-          :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          :aria-label="isDark ? t('nav.themeToLight') : t('nav.themeToDark')"
+          :title="isDark ? t('nav.themeToLight') : t('nav.themeToDark')"
         >
           <!-- Sun (shown in dark mode) -->
           <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,7 +48,7 @@
           </svg>
         </button>
 
-        <button class="cart-btn" @click.prevent="openCart" aria-label="Cart">
+        <button class="cart-btn" @click.prevent="openCart" :aria-label="t('nav.cart')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
@@ -43,7 +58,7 @@
           <span class="badge" v-show="itemCount > 0">{{ itemCount }}</span>
         </button>
 
-        <button class="mobile-toggle" @click="toggleMenu" :class="{ 'is-open': isMenuOpen }" aria-label="Toggle menu">
+        <button class="mobile-toggle" @click="toggleMenu" :class="{ 'is-open': isMenuOpen }" :aria-label="t('nav.toggleMenu')">
           <span class="bar"></span>
           <span class="bar"></span>
           <span class="bar"></span>
@@ -54,10 +69,10 @@
     <!-- Mobile Menu Drawer -->
     <div class="mobile-menu" :class="{ 'is-open': isMenuOpen }">
       <nav class="mobile-nav">
-        <RouterLink to="/" class="nav-link" active-class="active" @click="closeMenu">Home</RouterLink>
-        <RouterLink to="/shop" class="nav-link" active-class="active" @click="closeMenu">Shop</RouterLink>
-        <RouterLink to="/about" class="nav-link" active-class="active" @click="closeMenu">About</RouterLink>
-        <RouterLink to="/contact" class="nav-link" active-class="active" @click="closeMenu">Contact</RouterLink>
+        <RouterLink to="/" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.home') }}</RouterLink>
+        <RouterLink to="/shop" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.shop') }}</RouterLink>
+        <RouterLink to="/about" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.about') }}</RouterLink>
+        <RouterLink to="/contact" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.contact') }}</RouterLink>
       </nav>
     </div>
   </header>
@@ -67,10 +82,14 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useSnipcart } from '@/composables/useSnipcart';
 import { useTheme } from '@/composables/useTheme';
+import { useI18n } from 'vue-i18n';
+import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n';
 import logo from '@/assets/logo.webp';
 
 const { itemCount, openCart } = useSnipcart();
 const { isDark, toggleTheme } = useTheme();
+const { t } = useI18n();
+const { locale, setLocale } = useLocale();
 
 const isScrolled = ref(false);
 const isMenuOpen = ref(false);
@@ -192,6 +211,41 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.lang-switch {
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-light);
+  font-family: var(--font-family, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+}
+
+.lang-btn:hover {
+  color: var(--color-accent);
+}
+
+.lang-btn.active {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+.lang-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .theme-btn {
@@ -318,6 +372,27 @@ onUnmounted(() => {
 
 .mobile-nav .nav-link.active {
   color: var(--color-accent, #16a085);
+}
+
+/* Narrow phones: the logo already shows the name, so hide the text (still read by screen
+   readers) and tighten spacing to leave room for the language switch */
+@media (max-width: 479px) {
+  .navbar-container {
+    padding: 0 16px;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .brand-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 @media (min-width: 768px) {

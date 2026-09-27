@@ -1,0 +1,143 @@
+import type it from './it'
+
+// English — must have exactly the same keys as it.ts (the type below enforces it).
+const en: typeof it = {
+  meta: {
+    title: 'BrandiLab — 3D Printed Creations',
+    description:
+      'BrandiLab — Premium 3D printed creations handcrafted with precision. Shop unique smartphone stands, decorative figures, planters, and more.',
+  },
+  nav: {
+    home: 'Home',
+    shop: 'Shop',
+    about: 'About',
+    contact: 'Contact',
+    cart: 'Cart',
+    toggleMenu: 'Toggle menu',
+    themeToLight: 'Switch to light mode',
+    themeToDark: 'Switch to dark mode',
+    language: 'Language',
+  },
+  hero: {
+    title: '3D Printed Creations',
+    subtitle: 'Handcrafted with precision and unique designs.',
+    cta: 'Shop Now',
+  },
+  home: {
+    ourProducts: 'Our Products',
+    whyTitle: 'Why BrandiLab?',
+    precisionTitle: 'Precision Quality',
+    precisionText: 'Every piece is printed with meticulous attention to detail using premium materials.',
+    customTitle: 'Custom Designs',
+    customText: 'From concept to creation, we bring your unique ideas to life.',
+    ecoTitle: 'Eco-Friendly',
+    ecoText: 'We use biodegradable PLA and sustainable practices in our production.',
+    ctaTitle: 'Ready to explore?',
+    ctaText: 'Discover our full collection of 3D printed creations.',
+    ctaButton: 'Browse Shop',
+  },
+  shop: {
+    title: 'Our Products',
+    subtitle: 'Browse our collection of 3D printed creations',
+    all: 'All',
+    sortLabel: 'Sort products',
+    sortDefault: 'Sort by: Default',
+    sortPriceAsc: 'Price: Low to High',
+    sortPriceDesc: 'Price: High to Low',
+    sortNameAsc: 'Name: A-Z',
+  },
+  product: {
+    addToCart: 'Add to Cart',
+    addToCartTotal: 'Add to Cart - {price}',
+    empty: 'No products found.',
+    youMayAlsoLike: 'You May Also Like',
+    notFound: 'Product not found',
+    backToShop: 'Back to Shop',
+    decrease: 'Decrease quantity',
+    increase: 'Increase quantity',
+  },
+  about: {
+    title: 'About BrandiLab',
+    subtitle: 'Crafting the future, one layer at a time.',
+    storyTitle: 'Our Story',
+    story1:
+      'Based in the heart of Italy, BrandiLab is a passionate 3D printing studio dedicated to transforming digital concepts into physical realities. What started as a fascination with additive manufacturing has grown into a specialized service creating unique, high-quality products.',
+    story2:
+      "We believe that good design should be accessible, sustainable, and crafted with care. Whether it's functional tools, aesthetic home decor, or custom parts, we approach every print with the same level of dedication and precision.",
+    studioImage: 'Studio Image',
+    processTitle: 'Our Process',
+    designTitle: 'Design',
+    designText: 'We design each product digitally with precision CAD tools',
+    printTitle: 'Print',
+    printText: 'Printed layer by layer using premium materials on pro-grade printers',
+    shipTitle: 'Ship',
+    shipText: 'Quality checked and carefully packaged for delivery',
+    missionTitle: 'Our Mission',
+    mission:
+      'To provide innovative, durable, and sustainable 3D printed solutions that inspire creativity and solve everyday problems, while maintaining the highest standards of craftsmanship and environmental responsibility.',
+  },
+  contact: {
+    title: 'Get in Touch',
+    subtitle: "We'd love to hear from you. Send us a message!",
+    thanksTitle: 'Thank you!',
+    thanksText: "Your message has been sent. We'll get back to you shortly.",
+    nameLabel: 'Name',
+    namePlaceholder: 'Your name',
+    emailLabel: 'Email',
+    emailPlaceholder: 'Your email address',
+    subjectLabel: 'Subject',
+    subjectPlaceholder: 'What is this regarding?',
+    messageLabel: 'Message',
+    messagePlaceholder: 'How can we help you?',
+    send: 'Send Message',
+    emailTitle: 'Email',
+    locationTitle: 'Location',
+    location: 'Italy',
+    responseTitle: 'Response Time',
+    response: 'Within 24 hours',
+    faqTitle: 'Frequently Asked Questions',
+    faqs: {
+      materials: {
+        question: 'What materials do you use?',
+        answer:
+          'We primarily use PLA, TPU, and PETG depending on the product requirements. PLA is our go-to for eco-friendly, detailed prints, while TPU offers flexibility and PETG provides enhanced strength.',
+      },
+      shipping: {
+        question: 'How long does shipping take?',
+        answer:
+          'Orders are typically processed within 2-3 business days. Standard shipping within Italy takes 2-4 days, while international shipping can take 7-14 days depending on the destination.',
+      },
+      custom: {
+        question: 'Can I request custom designs?',
+        answer:
+          'Absolutely! Contact us with your idea using the form above or via email, and we will get back to you to discuss feasibility, pricing, and timelines.',
+      },
+    },
+  },
+  order: {
+    title: 'Order Confirmed!',
+    subtitle: 'Thank you for your purchase from BrandiLab',
+    orderNumber: 'Order Number',
+    details1: "We've received your order and will begin preparing your 3D printed creation right away.",
+    details2: "You'll receive a confirmation email with tracking information once your order ships.",
+    continueShopping: 'Continue Shopping',
+    backHome: 'Back to Home',
+  },
+  footer: {
+    logoAlt: 'BrandiLab — 3D printing services',
+    tagline:
+      'Precision 3D printing for unique designs. We bring imagination to reality with high-quality materials and craftsmanship.',
+    quickLinks: 'Quick Links',
+    aboutTitle: 'About',
+    ourStory: 'Our Story',
+    materials: 'Materials',
+    faq: 'FAQ',
+    contactTitle: 'Contact',
+    emailLabel: 'Email',
+    locationLabel: 'Location',
+    location: 'Italy',
+    rights: '© 2026 BrandiLab. All rights reserved.',
+  },
+}
+
+export default en

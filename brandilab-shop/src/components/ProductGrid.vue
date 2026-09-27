@@ -14,7 +14,7 @@
     </div>
 
     <div v-else-if="products.length === 0" class="empty-state">
-      <p>No products found.</p>
+      <p>{{ t('product.empty') }}</p>
     </div>
 
     <div v-else class="grid-container">
@@ -29,7 +29,10 @@
 
 <script setup lang="ts">
 import type { Product } from '@/types'
+import { useI18n } from 'vue-i18n'
 import ProductCard from './ProductCard.vue'
+
+const { t } = useI18n()
 
 withDefaults(defineProps<{
   products: Product[]

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useProducts } from '@/composables/useProducts'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import TheHero from '@/components/TheHero.vue'
 import ProductGrid from '@/components/ProductGrid.vue'
 
 const { products, loading } = useProducts()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -13,29 +15,29 @@ const { products, loading } = useProducts()
 
     <section class="section featured-section">
       <div class="container">
-        <h2 class="section-title">Our Products</h2>
+        <h2 class="section-title">{{ t('home.ourProducts') }}</h2>
         <ProductGrid :products="products" :loading="loading" />
       </div>
     </section>
 
     <section class="section why-section">
       <div class="container">
-        <h2 class="section-title">Why BrandiLab?</h2>
+        <h2 class="section-title">{{ t('home.whyTitle') }}</h2>
         <div class="values-grid">
           <div class="value-card">
             <div class="value-icon">🎯</div>
-            <h3>Precision Quality</h3>
-            <p>Every piece is printed with meticulous attention to detail using premium materials.</p>
+            <h3>{{ t('home.precisionTitle') }}</h3>
+            <p>{{ t('home.precisionText') }}</p>
           </div>
           <div class="value-card">
             <div class="value-icon">🎨</div>
-            <h3>Custom Designs</h3>
-            <p>From concept to creation, we bring your unique ideas to life.</p>
+            <h3>{{ t('home.customTitle') }}</h3>
+            <p>{{ t('home.customText') }}</p>
           </div>
           <div class="value-card">
             <div class="value-icon">🌱</div>
-            <h3>Eco-Friendly</h3>
-            <p>We use biodegradable PLA and sustainable practices in our production.</p>
+            <h3>{{ t('home.ecoTitle') }}</h3>
+            <p>{{ t('home.ecoText') }}</p>
           </div>
         </div>
       </div>
@@ -43,9 +45,9 @@ const { products, loading } = useProducts()
 
     <section class="section cta-section">
       <div class="container cta-content">
-        <h2>Ready to explore?</h2>
-        <p>Discover our full collection of 3D printed creations.</p>
-        <RouterLink to="/shop" class="btn btn-primary">Browse Shop</RouterLink>
+        <h2>{{ t('home.ctaTitle') }}</h2>
+        <p>{{ t('home.ctaText') }}</p>
+        <RouterLink to="/shop" class="btn btn-primary">{{ t('home.ctaButton') }}</RouterLink>
       </div>
     </section>
   </main>

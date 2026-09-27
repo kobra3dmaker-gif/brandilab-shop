@@ -8,15 +8,17 @@
     </div>
     
     <div class="hero-content">
-      <h1 class="hero-title">3D Printed Creations</h1>
-      <p class="hero-subtitle">Handcrafted with precision and unique designs.</p>
-      <RouterLink to="/shop" class="hero-btn">Shop Now</RouterLink>
+      <h1 class="hero-title">{{ t('hero.title') }}</h1>
+      <p class="hero-subtitle">{{ t('hero.subtitle') }}</p>
+      <RouterLink to="/shop" class="hero-btn">{{ t('hero.cta') }}</RouterLink>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-// Hero component logic
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <style scoped>
