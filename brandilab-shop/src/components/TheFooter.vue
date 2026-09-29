@@ -30,7 +30,7 @@
         <div class="footer-col">
           <h4 class="col-title">{{ t('footer.contactTitle') }}</h4>
           <address class="footer-address">
-            <p>{{ t('footer.emailLabel') }}: <a href="mailto:brandilab@pecsicura.com">brandilab@pecsicura.com</a></p>
+            <p>{{ t('footer.emailLabel') }}: <a href="mailto:kobra3dmaker@gmail.com">kobra3dmaker@gmail.com</a></p>
             <p>{{ t('footer.locationLabel') }}: {{ t('footer.location') }}</p>
           </address>
         </div>
@@ -44,9 +44,18 @@
           <button v-if="analyticsEnabled" class="cookie-link" @click="reopenBanner">{{ t('footer.cookiePreferences') }}</button>
         </p>
         <div class="social-links">
-          <a href="#" aria-label="Instagram">📸</a>
-          <a href="#" aria-label="Twitter">🐦</a>
-          <a href="#" aria-label="GitHub">🐙</a>
+          <a href="https://www.tiktok.com/@brandilab" target="_blank" rel="noopener noreferrer" aria-label="TikTok Shop">
+            <img :src="tiktokLogo" alt="TikTok Shop" class="footer-social-logo tiktok" />
+          </a>
+          <a href="https://www.vinted.it/member/315209443" target="_blank" rel="noopener noreferrer" aria-label="Vinted">
+            <img :src="vintedLogo" alt="Vinted" class="footer-social-logo vinted" />
+          </a>
+          <a href="https://www.ebay.it/usr/brandilab" target="_blank" rel="noopener noreferrer" aria-label="eBay">
+            <img :src="ebayLogo" alt="eBay" class="footer-social-logo ebay" />
+          </a>
+          <a href="https://www.subito.it/utente/131079177" target="_blank" rel="noopener noreferrer" aria-label="Subito">
+            <img :src="subitoLogo" alt="Subito" class="footer-social-logo subito" />
+          </a>
         </div>
       </div>
     </div>
@@ -57,6 +66,11 @@
 import { useI18n } from 'vue-i18n';
 import logo from '@/assets/logo.webp';
 import { analyticsEnabled, useAnalyticsConsent } from '@/analytics';
+
+import ebayLogo from '@/assets/logos/footer/ebay.png'
+import vintedLogo from '@/assets/logos/footer/vinted.jpg'
+import subitoLogo from '@/assets/logos/footer/subito.jpg'
+import tiktokLogo from '@/assets/logos/footer/tiktok.png'
 
 const { t } = useI18n();
 const { reopenBanner } = useAnalyticsConsent();
@@ -206,20 +220,26 @@ const { reopenBanner } = useAnalyticsConsent();
 .social-links {
   display: flex;
   gap: 16px;
-}
-
-.social-links a {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  font-size: 1.25rem;
-  transition: var(--transition, all 0.3s ease);
-  display: inline-flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition, all 0.3s ease);
+}
+
 .social-links a:hover {
-  transform: translateY(-2px);
-  color: var(--color-on-dark);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.footer-social-logo {
+  height: 32px;
+  width: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 </style>

@@ -75,7 +75,7 @@ const toggleFaq = (index: number) => {
           <div class="info-card">
             <div class="info-icon">✉️</div>
             <h3>{{ t('contact.emailTitle') }}</h3>
-            <p>brandilab@pecsicura.com</p>
+            <p>kobra3dmaker@gmail.com</p>
           </div>
           
           <div class="info-card">
