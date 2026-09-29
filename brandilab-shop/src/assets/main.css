@@ -124,9 +124,24 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Keep the Snipcart cart below the fixed navbar so its "Continue shopping" header stays visible */
+/* Keep the Snipcart cart below the fixed navbar and prevent it being clipped at the bottom.
+   dvh (dynamic viewport height) accounts for the browser chrome bar on mobile;
+   falls back to vh for older browsers. */
 .snipcart-modal__container {
   top: var(--navbar-height);
+  height: calc(100vh - var(--navbar-height));
+  height: calc(100dvh - var(--navbar-height));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* On mobile the navbar is still visible but the cart should use the full remaining viewport */
+@media (max-width: 767px) {
+  .snipcart-modal__container {
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
+    height: calc(100dvh - var(--navbar-height));
+  }
 }
 
 body {
