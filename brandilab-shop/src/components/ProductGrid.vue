@@ -3,11 +3,14 @@
     <slot name="header"></slot>
 
     <div v-if="loading" class="grid-container">
-      <div v-for="n in 4" :key="n" class="skeleton-card">
+      <div v-for="n in 8" :key="n" class="skeleton-card">
         <div class="skeleton-image"></div>
         <div class="skeleton-content">
+          <div class="skeleton-stars"></div>
           <div class="skeleton-title"></div>
           <div class="skeleton-price"></div>
+          <div class="skeleton-badge"></div>
+          <div class="skeleton-swatches"></div>
           <div class="skeleton-button"></div>
         </div>
       </div>
@@ -49,23 +52,30 @@ withDefaults(defineProps<{
 
 .grid-container {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .grid-container {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .grid-container {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
+  .grid-container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1400px) {
   .grid-container {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -98,36 +108,60 @@ withDefaults(defineProps<{
 }
 
 .skeleton-content {
-  padding: 1.25rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   flex-grow: 1;
 }
 
+.skeleton-stars {
+  height: 0.875rem;
+  width: 60%;
+  background-color: var(--color-skeleton);
+  border-radius: var(--radius-sm);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
 .skeleton-title {
-  height: 1.25rem;
-  width: 75%;
+  height: 1rem;
+  width: 80%;
   background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
 }
 
 .skeleton-price {
-  height: 1.5rem;
+  height: 1.25rem;
+  width: 35%;
+  background-color: var(--color-skeleton);
+  border-radius: var(--radius-sm);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-badge {
+  height: 1rem;
+  width: 45%;
+  background-color: var(--color-skeleton);
+  border-radius: var(--radius-full);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-swatches {
+  height: 1.25rem;
   width: 40%;
   background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
-  margin-top: auto;
 }
 
 .skeleton-button {
-  height: 2.5rem;
+  height: 2.25rem;
   width: 100%;
   background-color: var(--color-skeleton);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s infinite ease-in-out;
+  margin-top: auto;
 }
 
 @keyframes pulse {

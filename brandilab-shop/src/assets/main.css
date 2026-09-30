@@ -70,6 +70,25 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.55);
+
+  /* Snipcart Dark Mode Overrides */
+  --bgColor-default: var(--color-surface);
+  --bgColor-alt: var(--color-bg);
+  --color-default: var(--color-text);
+  --color-alt: var(--color-text-light);
+  --color-icon: var(--color-text-light);
+  --color-success: var(--color-success);
+  --color-error: var(--color-danger);
+  --color-input: var(--color-text);
+  --color-inputHover: var(--color-text);
+  --color-inputFocus: var(--color-text);
+  --color-inputChecked: var(--color-accent);
+  --color-link: var(--color-accent);
+  --color-linkHover: var(--color-accent-hover);
+  --color-modalBg: rgba(0, 0, 0, 0.7);
+  --borderColor-default: var(--color-border);
+  --borderColor-error: var(--color-danger);
+  --borderColor-focus: var(--color-accent);
 }
 
 .theme-light {
@@ -101,8 +120,8 @@
   --font-size-5xl: 3.5rem;
 
   /* Layout */
-  --navbar-height: 72px;
-  --container-max: 1280px;
+  --navbar-height: 108px;
+  --container-max: 1440px;
   --container-padding: 1.5rem;
 }
 

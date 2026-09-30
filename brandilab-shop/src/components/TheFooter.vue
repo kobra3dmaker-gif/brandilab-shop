@@ -3,7 +3,7 @@
     <div class="footer-container">
       <div class="footer-grid">
         <div class="footer-col brand-col">
-          <img class="footer-logo" :src="logo" :alt="t('footer.logoAlt')" width="112" height="112" loading="lazy">
+          <img class="footer-logo" :src="logo" :alt="t('footer.logoAlt')" width="80" height="80" loading="lazy">
           <h3 class="footer-brand">BrandiLab</h3>
           <p class="footer-text">{{ t('footer.tagline') }}</p>
         </div>
@@ -19,11 +19,20 @@
         </div>
 
         <div class="footer-col">
+          <h4 class="col-title">{{ t('footer.supportTitle') }}</h4>
+          <nav class="footer-nav">
+            <RouterLink to="/contact">{{ t('footer.helpCenter') }}</RouterLink>
+            <RouterLink to="/about#materials">{{ t('footer.shippingPolicy') }}</RouterLink>
+            <RouterLink to="/faq">{{ t('footer.returns') }}</RouterLink>
+            <RouterLink to="/faq">{{ t('footer.faq') }}</RouterLink>
+          </nav>
+        </div>
+
+        <div class="footer-col">
           <h4 class="col-title">{{ t('footer.aboutTitle') }}</h4>
           <nav class="footer-nav">
             <RouterLink to="/about#story">{{ t('footer.ourStory') }}</RouterLink>
             <RouterLink to="/about#materials">{{ t('footer.materials') }}</RouterLink>
-            <RouterLink to="/faq">{{ t('footer.faq') }}</RouterLink>
           </nav>
         </div>
 
@@ -33,6 +42,22 @@
             <p>{{ t('footer.emailLabel') }}: <a href="mailto:kobra3dmaker@gmail.com">kobra3dmaker@gmail.com</a></p>
             <p>{{ t('footer.locationLabel') }}: {{ t('footer.location') }}</p>
           </address>
+
+          <h4 class="col-title social-heading">{{ t('footer.socialTitle') }}</h4>
+          <div class="social-links-footer">
+            <a href="https://www.tiktok.com/@brandilab" target="_blank" rel="noopener noreferrer" aria-label="TikTok Shop">
+              <img :src="tiktokLogo" alt="TikTok Shop" class="footer-social-logo" />
+            </a>
+            <a href="https://www.vinted.it/member/315209443" target="_blank" rel="noopener noreferrer" aria-label="Vinted">
+              <img :src="vintedLogo" alt="Vinted" class="footer-social-logo" />
+            </a>
+            <a href="https://www.ebay.it/usr/brandilab" target="_blank" rel="noopener noreferrer" aria-label="eBay">
+              <img :src="ebayLogo" alt="eBay" class="footer-social-logo" />
+            </a>
+            <a href="https://www.subito.it/utente/131079177" target="_blank" rel="noopener noreferrer" aria-label="Subito">
+              <img :src="subitoLogo" alt="Subito" class="footer-social-logo" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -43,19 +68,10 @@
           {{ t('footer.rights') }}
           <button v-if="analyticsEnabled" class="cookie-link" @click="reopenBanner">{{ t('footer.cookiePreferences') }}</button>
         </p>
-        <div class="social-links">
-          <a href="https://www.tiktok.com/@brandilab" target="_blank" rel="noopener noreferrer" aria-label="TikTok Shop">
-            <img :src="tiktokLogo" alt="TikTok Shop" class="footer-social-logo tiktok" />
-          </a>
-          <a href="https://www.vinted.it/member/315209443" target="_blank" rel="noopener noreferrer" aria-label="Vinted">
-            <img :src="vintedLogo" alt="Vinted" class="footer-social-logo vinted" />
-          </a>
-          <a href="https://www.ebay.it/usr/brandilab" target="_blank" rel="noopener noreferrer" aria-label="eBay">
-            <img :src="ebayLogo" alt="eBay" class="footer-social-logo ebay" />
-          </a>
-          <a href="https://www.subito.it/utente/131079177" target="_blank" rel="noopener noreferrer" aria-label="Subito">
-            <img :src="subitoLogo" alt="Subito" class="footer-social-logo subito" />
-          </a>
+        <div class="bottom-links">
+          <RouterLink to="/contact">{{ t('footer.helpCenter') }}</RouterLink>
+          <RouterLink to="/about">{{ t('footer.aboutTitle') }}</RouterLink>
+          <RouterLink to="/about#materials">{{ t('footer.shippingPolicy') }}</RouterLink>
         </div>
       </div>
     </div>
@@ -81,11 +97,11 @@ const { reopenBanner } = useAnalyticsConsent();
   background-color: var(--color-brand-dark);
   color: var(--color-on-dark);
   font-family: var(--font-family, sans-serif);
-  padding-top: 64px;
+  padding-top: 48px;
 }
 
 .footer-container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -93,8 +109,8 @@ const { reopenBanner } = useAnalyticsConsent();
 .footer-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 40px;
-  margin-bottom: 64px;
+  gap: 32px;
+  margin-bottom: 48px;
 }
 
 @media (min-width: 640px) {
@@ -105,17 +121,18 @@ const { reopenBanner } = useAnalyticsConsent();
 
 @media (min-width: 960px) {
   .footer-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr 1.2fr;
+    gap: 24px;
   }
 }
 
 .footer-logo {
   display: block;
-  width: 112px;
-  height: 112px;
+  width: 80px;
+  height: 80px;
   max-width: none;
   object-fit: contain;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .cookie-link {
@@ -134,37 +151,41 @@ const { reopenBanner } = useAnalyticsConsent();
 }
 
 .footer-brand {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   color: var(--color-on-dark);
 }
 
 .footer-text {
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .col-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
   color: var(--color-on-dark);
+}
+
+.social-heading {
+  margin-top: 20px;
 }
 
 .footer-nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .footer-nav a {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.65);
   text-decoration: none;
   transition: var(--transition, all 0.3s ease);
-  font-size: 0.95rem;
+  font-size: 0.875rem;
 }
 
 .footer-nav a:hover {
@@ -173,17 +194,17 @@ const { reopenBanner } = useAnalyticsConsent();
 
 .footer-address {
   font-style: normal;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
-  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  font-size: 0.875rem;
 }
 
 .footer-address p {
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .footer-address a {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.65);
   text-decoration: none;
   transition: var(--transition, all 0.3s ease);
 }
@@ -192,16 +213,42 @@ const { reopenBanner } = useAnalyticsConsent();
   color: var(--color-accent, #16a085);
 }
 
+.social-links-footer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.social-links-footer a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition, all 0.3s ease);
+}
+
+.social-links-footer a:hover {
+  transform: translateY(-2px) scale(1.08);
+}
+
+.footer-social-logo {
+  height: 30px;
+  width: 30px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 24px 0;
+  padding: 20px 0;
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 .bottom-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 @media (min-width: 640px) {
@@ -213,33 +260,25 @@ const { reopenBanner } = useAnalyticsConsent();
 
 .copyright {
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
 }
 
-.social-links {
+.bottom-links {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.social-links a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition, all 0.3s ease);
+.bottom-links a {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: var(--transition-fast);
 }
 
-.social-links a:hover {
-  transform: translateY(-2px) scale(1.05);
-}
-
-.footer-social-logo {
-  height: 32px;
-  width: 32px;
-  object-fit: cover;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+.bottom-links a:hover {
+  color: var(--color-accent);
 }
 </style>

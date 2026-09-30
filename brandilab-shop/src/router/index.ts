@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const HomeView = () => import('@/views/HomeView.vue')
-const ShopView = () => import('@/views/ShopView.vue')
 const ProductView = () => import('@/views/ProductView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
-const OrderConfirmationView = () => import('@/views/OrderConfirmationView.vue')
 const ThankYouView = () => import('@/views/ThankYouView.vue')
 const AdminDashboard = () => import('@/views/AdminDashboard.vue')
 
@@ -16,11 +14,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-    },
-    {
-      path: '/shop',
-      name: 'shop',
-      component: ShopView,
     },
     {
       path: '/product/:id',
@@ -40,7 +33,7 @@ const router = createRouter({
     {
       path: '/order-confirmation',
       name: 'order-confirmation',
-      component: OrderConfirmationView,
+      component: ThankYouView,
     },
     {
       path: '/thank-you',

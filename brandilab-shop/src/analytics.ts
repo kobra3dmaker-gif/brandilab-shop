@@ -30,6 +30,11 @@ function gtag(...args: unknown[]) {
 
 function readStored(): Consent | null {
   try {
+    const match = document.cookie.match(new RegExp('(^| )' + STORAGE_KEY + '=([^;]+)'))
+    if (match) {
+      const value = match[2]
+      return value === 'granted' || value === 'denied' ? value : null
+    }
     const value = localStorage.getItem(STORAGE_KEY)
     return value === 'granted' || value === 'denied' ? value : null
   } catch {
@@ -40,6 +45,7 @@ function readStored(): Consent | null {
 function writeStored(value: Consent) {
   try {
     localStorage.setItem(STORAGE_KEY, value)
+    document.cookie = `${STORAGE_KEY}=${value}; max-age=${60 * 60 * 24 * 365}; path=/; SameSite=Lax`
   } catch {
     // Storage blocked — the banner will simply ask again next visit
   }

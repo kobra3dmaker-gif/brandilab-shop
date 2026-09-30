@@ -1,406 +1,521 @@
-<template>
-  <header class="navbar" :class="{ 'scrolled': isScrolled }">
-    <div class="navbar-container">
-      <div class="brand">
-        <RouterLink class="brand-link" to="/">
-          <img class="brand-logo" :src="logo" alt="" width="60" height="60">
-          <span class="brand-name">BrandiLab</span>
-        </RouterLink>
-      </div>
-      
-      <nav class="desktop-nav">
-        <RouterLink to="/" class="nav-link" active-class="active">{{ t('nav.home') }}</RouterLink>
-        <RouterLink to="/shop" class="nav-link" active-class="active">{{ t('nav.shop') }}</RouterLink>
-        <RouterLink to="/about" class="nav-link" active-class="active">{{ t('nav.about') }}</RouterLink>
-        <RouterLink to="/contact" class="nav-link" active-class="active">{{ t('nav.contact') }}</RouterLink>
-      </nav>
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useSnipcart } from '@/composables/useSnipcart'
+import { useTheme } from '@/composables/useTheme'
+import { useI18n } from 'vue-i18n'
+import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n'
+import { useProducts } from '@/composables/useProducts'
+import { useRouter } from 'vue-router'
+import logo from '@/assets/logo.webp'
 
-      <div class="actions">
-        <div class="lang-switch" role="group" :aria-label="t('nav.language')">
-          <button
-            v-for="code in SUPPORTED_LOCALES"
-            :key="code"
-            class="lang-btn"
-            :class="{ active: locale === code }"
-            :aria-pressed="locale === code"
-            :lang="code"
-            :title="LOCALE_NAMES[code]"
-            @click="setLocale(code)"
-          >
-            {{ code.toUpperCase() }}
+const { itemCount, openCart } = useSnipcart()
+const { isDark, toggleTheme } = useTheme() // Theme toggle available for UI
+const { t } = useI18n()
+const { locale, setLocale } = useLocale()
+const { searchQuery } = useProducts()
+const router = useRouter()
+
+const isScrolled = ref(false)
+const showMobileMenu = ref(false)
+const showCategoriesDropdown = ref(false)
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 20
+}
+
+const doSearch = () => {
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/#shop')
+  }
+}
+
+const toggleMobileMenu = () => {
+  showMobileMenu.value = !showMobileMenu.value
+}
+
+const toggleCategories = () => {
+  showCategoriesDropdown.value = !showCategoriesDropdown.value
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+</script>
+
+<template>
+  <header class="navbar-wrapper" :class="{ 'is-scrolled': isScrolled }">
+    <!-- Main Navbar -->
+    <nav class="navbar-main">
+      <div class="navbar-container">
+        
+        <!-- Left: Logo & Brand -->
+        <RouterLink to="/" class="navbar-brand">
+          <img :src="logo" alt="BrandiLab" class="brand-logo" />
+          <span class="brand-text">BrandiLab</span>
+        </RouterLink>
+
+        <!-- Center: Search Bar (Hidden on Mobile) -->
+        <div class="navbar-search desktop-only">
+          <input 
+            type="text" 
+            class="search-input" 
+            :placeholder="t('nav.searchPlaceholder') || 'Cerca prodotti...'" 
+            v-model="searchQuery"
+            @keyup.enter="doSearch"
+          />
+          <button class="search-button" aria-label="Cerca" @click="doSearch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
           </button>
         </div>
 
-        <button
-          class="theme-btn"
-          @click="toggleTheme"
-          :aria-label="isDark ? t('nav.themeToLight') : t('nav.themeToDark')"
-          :title="isDark ? t('nav.themeToLight') : t('nav.themeToDark')"
-        >
-          <!-- Sun (shown in dark mode) -->
-          <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-          </svg>
-          <!-- Moon (shown in light mode) -->
-          <svg v-else xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        </button>
+        <!-- Right: Actions -->
+        <div class="navbar-actions">
+          
+          <!-- Categories Dropdown (Desktop Only) -->
+          <div class="dropdown-wrapper desktop-only">
+            <button class="action-btn text-btn" @click="toggleCategories">
+              <span>{{ t('nav.browseCategories') || 'Sfoglia categorie' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotated': showCategoriesDropdown }">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div v-if="showCategoriesDropdown" class="dropdown-menu">
+              <!-- Dummy links for categories -->
+              <RouterLink to="/" class="dropdown-item">Stampe 3D</RouterLink>
+              <RouterLink to="/" class="dropdown-item">Taglio Laser</RouterLink>
+              <RouterLink to="/" class="dropdown-item">Gadget</RouterLink>
+            </div>
+          </div>
 
-        <button class="cart-btn" @click.prevent="openCart" :aria-label="t('nav.cart')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span class="snipcart-items-count badge">0</span>
-          <span class="badge" v-show="itemCount > 0">{{ itemCount }}</span>
-        </button>
+          <!-- Language Switcher -->
+          <div class="lang-switcher">
+            <button 
+              v-for="loc in SUPPORTED_LOCALES" 
+              :key="loc"
+              @click="setLocale(loc)"
+              class="lang-btn"
+              :class="{ 'active': locale === loc }"
+            >
+              {{ loc.toUpperCase() }}
+            </button>
+          </div>
 
-        <button class="mobile-toggle" @click="toggleMenu" :class="{ 'is-open': isMenuOpen }" :aria-label="t('nav.toggleMenu')">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </button>
+          <!-- Theme Toggle -->
+          <button class="action-btn theme-btn" @click="toggleTheme" aria-label="Cambia tema">
+            <svg v-if="!isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <!-- Cart Button -->
+          <button class="action-btn cart-btn snipcart-checkout" @click="openCart" aria-label="Carrello">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span class="cart-badge snipcart-items-count">{{ itemCount }}</span>
+          </button>
+
+          <!-- Mobile Menu Toggle -->
+          <button class="action-btn mobile-menu-toggle mobile-only" @click="toggleMobileMenu" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line v-if="!showMobileMenu" x1="3" y1="12" x2="21" y2="12"></line>
+              <line v-if="!showMobileMenu" x1="3" y1="6" x2="21" y2="6"></line>
+              <line v-if="!showMobileMenu" x1="3" y1="18" x2="21" y2="18"></line>
+              <line v-if="showMobileMenu" x1="18" y1="6" x2="6" y2="18"></line>
+              <line v-if="showMobileMenu" x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Secondary Nav Strip (Desktop Only) -->
+    <div class="navbar-secondary desktop-only">
+      <div class="secondary-container">
+        <RouterLink to="/" class="secondary-link">{{ t('nav.newArrivals') || 'Novità' }}</RouterLink>
+        <RouterLink to="/" class="secondary-link">{{ t('nav.bestsellers') || 'Bestseller' }}</RouterLink>
+        <RouterLink to="/" class="secondary-link">{{ t('nav.giftIdeas') || 'Idee regalo' }}</RouterLink>
+        <RouterLink to="/" class="secondary-link">{{ t('nav.allProducts') || 'Tutti i prodotti' }}</RouterLink>
       </div>
     </div>
 
-    <!-- Mobile Menu Drawer -->
-    <div class="mobile-menu" :class="{ 'is-open': isMenuOpen }">
-      <nav class="mobile-nav">
-        <RouterLink to="/" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.home') }}</RouterLink>
-        <RouterLink to="/shop" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.shop') }}</RouterLink>
-        <RouterLink to="/about" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.about') }}</RouterLink>
-        <RouterLink to="/contact" class="nav-link" active-class="active" @click="closeMenu">{{ t('nav.contact') }}</RouterLink>
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" :class="{ 'is-open': showMobileMenu }">
+      <div class="mobile-search">
+        <input 
+          type="text" 
+          class="search-input" 
+          :placeholder="t('nav.searchPlaceholder') || 'Cerca prodotti...'" 
+          v-model="searchQuery"
+          @keyup.enter="doSearch"
+        />
+        <button class="search-button" @click="doSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <nav class="mobile-nav-links">
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.newArrivals') || 'Novità' }}</RouterLink>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.bestsellers') || 'Bestseller' }}</RouterLink>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.giftIdeas') || 'Idee regalo' }}</RouterLink>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.allProducts') || 'Tutti i prodotti' }}</RouterLink>
+        
+        <div class="mobile-divider"></div>
+        
+        <p class="mobile-section-title">{{ t('nav.browseCategories') || 'Sfoglia categorie' }}</p>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Stampe 3D</RouterLink>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Taglio Laser</RouterLink>
+        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Gadget</RouterLink>
       </nav>
     </div>
   </header>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useSnipcart } from '@/composables/useSnipcart';
-import { useTheme } from '@/composables/useTheme';
-import { useI18n } from 'vue-i18n';
-import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n';
-import logo from '@/assets/logo.webp';
-
-const { itemCount, openCart } = useSnipcart();
-const { isDark, toggleTheme } = useTheme();
-const { t } = useI18n();
-const { locale, setLocale } = useLocale();
-
-const isScrolled = ref(false);
-const isMenuOpen = ref(false);
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50;
-};
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
-};
-
-const closeMenu = () => {
-  isMenuOpen.value = false;
-};
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true });
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-});
-</script>
-
 <style scoped>
-.navbar {
+.navbar-wrapper {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
   width: 100%;
-  height: var(--navbar-height, 72px);
-  background-color: var(--color-navbar-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-brand-dark, #1a1a1a);
+  color: var(--color-on-dark, #ffffff);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   transition: var(--transition, all 0.3s ease);
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
 }
 
-.navbar.scrolled {
-  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
-  border-bottom-color: transparent;
+.navbar-main {
+  height: var(--navbar-height, 72px);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .navbar-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 100%;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 2rem;
 }
 
-.brand-link {
-  font-family: var(--font-family, sans-serif);
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-primary, #1a1a2e);
-  text-decoration: none;
-  letter-spacing: -0.5px;
+/* Brand */
+.navbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.brand {
-  flex-shrink: 0;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--color-on-dark, #ffffff);
 }
 
 .brand-logo {
-  width: 60px;
-  height: 60px;
-  max-width: none; /* override the global img max-width so it never gets squashed */
+  height: 40px;
+  width: auto;
   object-fit: contain;
-  flex-shrink: 0;
 }
 
-.desktop-nav {
-  display: none;
-  gap: 32px;
-}
-
-.desktop-nav .nav-link {
-  font-family: var(--font-family, sans-serif);
-  color: var(--color-text, #2d3436);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1rem;
-  position: relative;
-  transition: var(--transition, all 0.3s ease);
-}
-
-.desktop-nav .nav-link:hover {
-  color: var(--color-accent, #16a085);
-}
-
-.desktop-nav .nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--color-accent, #16a085);
-  transition: var(--transition, all 0.3s ease);
-}
-
-.desktop-nav .nav-link.active {
-  color: var(--color-accent, #16a085);
-}
-
-.desktop-nav .nav-link.active::after {
-  width: 100%;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.lang-switch {
-  display: flex;
-  padding: 2px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-}
-
-.lang-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-light);
-  font-family: var(--font-family, sans-serif);
-  font-size: 0.75rem;
+.brand-text {
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  padding: 4px 8px;
-  border-radius: var(--radius-full);
-  transition: var(--transition);
 }
 
-.lang-btn:hover {
-  color: var(--color-accent);
-}
-
-.lang-btn.active {
-  background-color: var(--color-accent);
-  color: #fff;
-}
-
-.lang-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.theme-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text);
+/* Search */
+.navbar-search {
+  flex: 1;
+  max-width: 600px;
   display: flex;
   align-items: center;
-  padding: 8px;
-  border-radius: var(--radius-full);
-  transition: var(--transition);
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-md, 6px);
+  overflow: hidden;
+  height: 44px;
+  border: 1px solid var(--color-border);
 }
 
-.theme-btn:hover {
-  color: var(--color-accent);
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  padding: 0 1rem;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
 }
 
-.theme-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+.search-button {
+  background: var(--color-accent, #16a085);
+  color: white;
+  border: none;
+  height: 100%;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-button:hover {
+  background-color: #12876f;
+}
+
+/* Actions */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-on-dark, #ffffff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.8;
+}
+
+.text-btn {
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.5rem;
+}
+
+.text-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.text-btn svg.rotated {
+  transform: rotate(180deg);
 }
 
 .cart-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text, #2d3436);
-  display: flex;
-  align-items: center;
   position: relative;
-  padding: 8px;
-  transition: var(--transition, all 0.3s ease);
+  padding: 0.25rem;
 }
 
-.cart-btn:hover {
-  color: var(--color-accent, #16a085);
-}
-
-.badge {
+.cart-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px;
+  right: -8px;
   background-color: var(--color-accent, #16a085);
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full, 9999px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 6px;
+  border: 2px solid var(--color-brand-dark, #1a1a1a);
 }
 
-.mobile-toggle {
+/* Lang Switcher */
+.lang-switcher {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 24px;
-  height: 18px;
-  background: none;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.lang-btn {
+  background: transparent;
   border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  padding: 0;
-}
-
-.bar {
-  width: 100%;
-  height: 2px;
-  background-color: var(--color-text, #2d3436);
+  padding: 0.25rem 0.5rem;
   border-radius: 2px;
-  transition: var(--transition, all 0.3s ease);
-  transform-origin: left center;
+  transition: all 0.2s;
 }
 
-.mobile-toggle.is-open .bar:nth-child(1) {
-  transform: rotate(45deg);
+.lang-btn:hover {
+  color: white;
 }
 
-.mobile-toggle.is-open .bar:nth-child(2) {
-  opacity: 0;
+.lang-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
-.mobile-toggle.is-open .bar:nth-child(3) {
-  transform: rotate(-45deg);
+/* Dropdown */
+.dropdown-wrapper {
+  position: relative;
 }
 
-.mobile-menu {
+.dropdown-menu {
   position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background-color: var(--color-surface, #ffffff);
-  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
-  clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-  transition: clip-path 0.3s ease-in-out;
-}
-
-.mobile-menu.is-open {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-}
-
-.mobile-nav {
+  top: calc(100% + 1rem);
+  right: 0;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  padding: 0.5rem 0;
   display: flex;
   flex-direction: column;
-  padding: 16px 24px;
 }
 
-.mobile-nav .nav-link {
-  padding: 16px 0;
-  font-family: var(--font-family, sans-serif);
-  color: var(--color-text, #2d3436);
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  color: #333;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 1.125rem;
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
 }
 
-.mobile-nav .nav-link:last-child {
-  border-bottom: none;
-}
-
-.mobile-nav .nav-link.active {
+.dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
   color: var(--color-accent, #16a085);
 }
 
-/* Narrow phones: the logo already shows the name, so hide the text (still read by screen
-   readers) and tighten spacing to leave room for the language switch */
-@media (max-width: 479px) {
-  .navbar-container {
-    padding: 0 16px;
-  }
-
-  .actions {
-    gap: 8px;
-  }
-
-  .brand-name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
+/* Secondary Nav */
+.navbar-secondary {
+  background-color: rgba(0, 0, 0, 0.2); /* Darker shade */
+  height: 36px;
+  display: flex;
+  align-items: center;
 }
 
-@media (min-width: 768px) {
-  .desktop-nav {
+.secondary-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.secondary-link {
+  color: var(--color-on-dark, #ffffff);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+  padding: 0.25rem 0;
+}
+
+.secondary-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Mobile Drawer */
+.mobile-drawer {
+  display: none;
+  background-color: var(--color-brand-dark, #1a1a1a);
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-drawer.is-open {
+  display: block;
+}
+
+.mobile-search {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-md, 6px);
+  overflow: hidden;
+  height: 40px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mobile-link {
+  color: var(--color-on-dark, #ffffff);
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.mobile-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+.mobile-section-title {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+/* Utilities */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
     display: flex;
   }
-  .mobile-toggle, .mobile-menu {
-    display: none;
+
+  .navbar-container {
+    gap: 1rem;
   }
 }
 </style>

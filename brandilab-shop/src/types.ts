@@ -1,4 +1,4 @@
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { SanityImageSource } from '@sanity/image-url'
 
 export interface Product {
   _id: string
@@ -9,5 +9,6 @@ export interface Product {
   description: string
   image: SanityImageSource
   category?: string
+  color?: string
   featured?: boolean
 }
