@@ -72,25 +72,9 @@
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
-/* Snipcart Dark Mode Overrides */
-:root[data-theme='dark'] #snipcart {
-  --bgColor-default: var(--color-surface);
-  --bgColor-alt: var(--color-bg);
-  --color-default: var(--color-text);
-  --color-alt: var(--color-text-light);
-  --color-icon: var(--color-text-light);
-  --color-success: var(--color-success);
-  --color-error: var(--color-danger);
-  --color-input: var(--color-text);
-  --color-inputHover: var(--color-text);
-  --color-inputFocus: var(--color-text);
-  --color-inputChecked: var(--color-accent);
-  --color-link: var(--color-accent);
-  --color-linkHover: var(--color-accent-hover);
-  --color-modalBg: rgba(0, 0, 0, 0.7);
-  --borderColor-default: var(--color-border);
-  --borderColor-error: var(--color-danger);
-  --borderColor-focus: var(--color-accent);
+/* Disable Dark Mode for Snipcart */
+#snipcart {
+  color-scheme: light;
 }
 
 .theme-light {
