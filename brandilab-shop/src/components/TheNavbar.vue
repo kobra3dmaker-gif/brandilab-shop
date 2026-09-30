@@ -518,4 +518,18 @@ onUnmounted(() => {
     gap: 1rem;
   }
 }
+
+@media (max-width: 768px) {
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+  
+  .brand-text {
+    display: none;
+  }
+  
+  .navbar-container {
+    padding: 0 1rem;
+  }
+}
 </style>

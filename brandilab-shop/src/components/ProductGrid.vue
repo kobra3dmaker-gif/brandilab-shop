@@ -2,7 +2,7 @@
   <section class="product-grid-section">
     <slot name="header"></slot>
 
-    <div v-if="loading" class="grid-container">
+    <div v-if="loading" class="grid-container" :class="{ 'is-horizontal': horizontalOnMobile }">
       <div v-for="n in 8" :key="n" class="skeleton-card">
         <div class="skeleton-image"></div>
         <div class="skeleton-content">
@@ -20,7 +20,7 @@
       <p>{{ t('product.empty') }}</p>
     </div>
 
-    <div v-else class="grid-container">
+    <div v-else class="grid-container" :class="{ 'is-horizontal': horizontalOnMobile }">
       <ProductCard 
         v-for="product in products" 
         :key="product._id" 
@@ -40,8 +40,10 @@ const { t } = useI18n()
 withDefaults(defineProps<{
   products: Product[]
   loading?: boolean
+  horizontalOnMobile?: boolean
 }>(), {
-  loading: false
+  loading: false,
+  horizontalOnMobile: false
 })
 </script>
 
@@ -55,6 +57,29 @@ withDefaults(defineProps<{
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
+
+@media (max-width: 639px) {
+  .grid-container.is-horizontal {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    scrollbar-width: none; /* Firefox */
+    align-items: stretch;
+  }
+  
+  .grid-container.is-horizontal::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
+  .grid-container.is-horizontal > * {
+    flex: 0 0 75%;
+    scroll-snap-align: start;
+    height: auto; /* Allow stretch */
+  }
+}
+
 
 @media (min-width: 640px) {
   .grid-container {

@@ -8,6 +8,8 @@ import ProductGrid from '@/components/ProductGrid.vue'
 const { products, loading, materials, categories, colors, filterProducts, sortProducts, searchQuery } = useProducts()
 const { t } = useI18n()
 
+const isMobileFilterOpen = ref(false)
+
 const filters = ref({
   material: 'All',
   category: 'All',
@@ -140,7 +142,14 @@ const applyPriceInputs = () => {
         
         <div class="shop-layout">
           <!-- Amazon-style Sidebar Filters -->
-          <aside class="shop-sidebar">
+          <div class="mobile-filter-overlay" v-if="isMobileFilterOpen" @click="isMobileFilterOpen = false"></div>
+          
+          <aside class="shop-sidebar" :class="{ 'is-open': isMobileFilterOpen }">
+            <div class="mobile-filter-header">
+              <h3>{{ t('shop.filtersTitle') }}</h3>
+              <button class="close-filter-btn" @click="isMobileFilterOpen = false">&times;</button>
+            </div>
+
             <!-- Categories with checkboxes -->
             <div class="filter-section">
               <button class="filter-header" @click="toggleSection('categories')">
@@ -215,13 +224,19 @@ const applyPriceInputs = () => {
           <div class="shop-main">
             <div class="shop-header">
               <h2 class="section-title">{{ t('home.ourProducts') }}</h2>
-              <div class="sort-filter">
+              <div class="sort-filter-actions">
+                <button class="btn btn-outline mobile-filter-btn" @click="isMobileFilterOpen = true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  {{ t('shop.filtersTitle') }}
+                </button>
+                <div class="sort-filter">
                 <select v-model="sortBy" class="sort-select" :aria-label="t('shop.sortLabel')">
                   <option value="default">{{ t('shop.sortDefault') }}</option>
                   <option value="price-asc">{{ t('shop.sortPriceAsc') }}</option>
                   <option value="price-desc">{{ t('shop.sortPriceDesc') }}</option>
                   <option value="name-asc">{{ t('shop.sortNameAsc') }}</option>
                 </select>
+              </div>
               </div>
             </div>
             
@@ -236,7 +251,7 @@ const applyPriceInputs = () => {
     <section class="recommended-section" v-if="recommendedProducts.length > 0">
       <div class="container">
         <h2 class="section-title">{{ t('home.recommendedTitle') }}</h2>
-        <ProductGrid :products="recommendedProducts" />
+        <ProductGrid :products="recommendedProducts" :horizontal-on-mobile="true" />
       </div>
     </section>
 
@@ -286,6 +301,75 @@ const applyPriceInputs = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  position: relative;
+}
+
+/* Mobile Sidebar (Drawer) */
+.shop-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--color-surface);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 1.5rem;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-lg);
+}
+
+.shop-sidebar.is-open {
+  transform: translateX(0);
+}
+
+.mobile-filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.mobile-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.mobile-filter-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.close-filter-btn {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Mobile Filter Button */
+.sort-filter-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+}
+.mobile-filter-btn {
+  display: flex;
+  white-space: nowrap;
+}
+.sort-filter {
+  flex-grow: 1;
 }
 
 @media (min-width: 768px) {
@@ -299,6 +383,17 @@ const applyPriceInputs = () => {
     flex-shrink: 0;
     position: sticky;
     top: calc(var(--navbar-height) + 1rem);
+    height: auto;
+    transform: none;
+    padding: 0;
+    box-shadow: none;
+    z-index: 1;
+  }
+
+  .mobile-filter-overlay,
+  .mobile-filter-header,
+  .mobile-filter-btn {
+    display: none;
   }
 
   .shop-main {

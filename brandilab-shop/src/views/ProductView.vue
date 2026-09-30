@@ -148,7 +148,7 @@ const recommendedProducts = computed(() => {
 
       <section class="recommended-section" v-if="recommendedProducts.length > 0">
         <h2 class="section-title">{{ t('product.youMayAlsoLike') }}</h2>
-        <ProductGrid :products="recommendedProducts" />
+        <ProductGrid :products="recommendedProducts" :horizontal-on-mobile="true" />
       </section>
     </div>
     

@@ -70,8 +70,10 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
 
-  /* Snipcart Dark Mode Overrides */
+/* Snipcart Dark Mode Overrides */
+:root[data-theme='dark'] #snipcart {
   --bgColor-default: var(--color-surface);
   --bgColor-alt: var(--color-bg);
   --color-default: var(--color-text);
