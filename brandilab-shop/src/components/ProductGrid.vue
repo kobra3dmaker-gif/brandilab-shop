@@ -74,7 +74,7 @@ withDefaults(defineProps<{
   }
 
   .grid-container.is-horizontal > * {
-    flex: 0 0 75%;
+    flex: 0 0 calc(50% - 0.5rem);
     scroll-snap-align: start;
     height: auto; /* Allow stretch */
   }
