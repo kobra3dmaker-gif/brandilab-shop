@@ -213,8 +213,10 @@ const en: typeof it = {
     statusInit: 'Initializing payment...',
     statusProcessing: 'Processing...',
     statusFinalizing: 'Confirming payment...',
-    errorGeneric: 'An error occurred. Please try again or use another payment method.',
+    errorGeneric: 'An error occurred during processing. Please try again or use another payment method.',
     errorFinalize: 'Error confirming payment. Please contact support.',
+    errorSession: 'Session expired or invalid. Please return to your cart.',
+    errorInit: 'Loading error. Please try again or use another payment method.',
     noWallet: 'Apple Pay or Google Pay are not available on this device or browser. Please go back and select card payment.',
     backToShop: 'Back to Shop'
   }

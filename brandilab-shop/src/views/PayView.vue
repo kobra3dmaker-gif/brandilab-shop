@@ -39,7 +39,10 @@ onMounted(async () => {
     // Normal flow: initialize payment
     statusMsg.value = t('pay.statusInit', 'Inizializzazione pagamento...')
     const sessionRes = await fetch(`${API_BASE}/api/payment-session?publicToken=${encodeURIComponent(publicToken)}`)
-    if (!sessionRes.ok) throw new Error('Session unavailable')
+    if (!sessionRes.ok) {
+      const errText = await sessionRes.text().catch(() => '')
+      throw new Error(`[payment-session] Status: ${sessionRes.status}, Body: ${errText}`)
+    }
     
     const { amount, currency } = await sessionRes.json()
 
@@ -80,12 +83,11 @@ onMounted(async () => {
       }
     })
 
-    expressCheckoutElement.on('confirm', async (event) => {
+    expressCheckoutElement.on('confirm', async (event: any) => {
       try {
         const { error: submitError } = await elements!.submit()
         if (submitError) {
-          errorMsg.value = submitError.message || 'Errore di validazione.'
-          return
+          throw new Error(`[elements.submit] Validation failed: ${submitError.message}`)
         }
 
         statusMsg.value = t('pay.statusProcessing', 'Elaborazione in corso...')
@@ -95,7 +97,10 @@ onMounted(async () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ publicToken })
         })
-        if (!createRes.ok) throw new Error('Intent creation failed')
+        if (!createRes.ok) {
+          const errText = await createRes.text().catch(() => '')
+          throw new Error(`[create-intent] Status: ${createRes.status}, Body: ${errText}`)
+        }
         
         const { clientSecret } = await createRes.json()
 
@@ -109,21 +114,24 @@ onMounted(async () => {
         })
 
         if (confirmRes.error) {
-          errorMsg.value = confirmRes.error.message || 'Errore durante il pagamento.'
-          statusMsg.value = ''
+          throw new Error(`[confirmPayment] Failed: ${confirmRes.error.message}`)
         } else if (confirmRes.paymentIntent && confirmRes.paymentIntent.status === 'succeeded') {
           await finalizePayment(publicToken, confirmRes.paymentIntent.id)
         }
-      } catch (err) {
-        console.error(err)
-        errorMsg.value = t('pay.errorGeneric', 'Si è verificato un errore. Riprova o usa un altro metodo.')
+      } catch (err: any) {
+        console.error('Payment flow error:', err.message || err)
+        errorMsg.value = t('pay.errorGeneric', 'Si è verificato un errore durante l\'elaborazione. Riprova o usa un altro metodo.')
         statusMsg.value = ''
       }
     })
 
-  } catch (err) {
-    console.error(err)
-    errorMsg.value = t('pay.errorGeneric', 'Si è verificato un errore. Riprova o usa un altro metodo.')
+  } catch (err: any) {
+    console.error('Initialization error:', err.message || err)
+    if (err.message && err.message.includes('[payment-session]')) {
+      errorMsg.value = t('pay.errorSession', 'Sessione scaduta o non valida. Torna al carrello.')
+    } else {
+      errorMsg.value = t('pay.errorInit', 'Errore di caricamento. Riprova o usa un altro metodo.')
+    }
     loading.value = false
   }
 })
@@ -138,12 +146,15 @@ async function finalizePayment(publicToken: string, paymentIntentId: string) {
       body: JSON.stringify({ publicToken, paymentIntentId })
     })
     
-    if (!res.ok) throw new Error('Finalize failed')
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      throw new Error(`[finalize] Status: ${res.status}, Body: ${errText}`)
+    }
     
     const { redirectUrl } = await res.json()
     window.location.href = redirectUrl
-  } catch (err) {
-    console.error(err)
+  } catch (err: any) {
+    console.error('Finalize error:', err.message || err)
     errorMsg.value = t('pay.errorFinalize', 'Errore nella conferma del pagamento. Contatta l\'assistenza.')
     loading.value = false
     statusMsg.value = ''

@@ -212,8 +212,10 @@ export default {
     statusInit: 'Inizializzazione pagamento...',
     statusProcessing: 'Elaborazione in corso...',
     statusFinalizing: 'Conferma del pagamento...',
-    errorGeneric: 'Si è verificato un errore. Riprova o usa un altro metodo.',
+    errorGeneric: 'Si è verificato un errore durante l\'elaborazione. Riprova o usa un altro metodo.',
     errorFinalize: 'Errore nella conferma del pagamento. Contatta l\'assistenza.',
+    errorSession: 'Sessione scaduta o non valida. Torna al carrello.',
+    errorInit: 'Errore di caricamento. Riprova o usa un altro metodo.',
     noWallet: 'Apple Pay o Google Pay non sono disponibili su questo dispositivo o browser. Per favore, torna indietro e seleziona il pagamento con carta.',
     backToShop: 'Torna al Negozio'
   }
