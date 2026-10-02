@@ -48,12 +48,6 @@ jobs:
       - name: Build
         run: npm run build-only
 
-      - name: Fix Apple Pay File and Jekyll
-        run: |
-          touch ./dist/.nojekyll
-          mkdir -p ./dist/.well-known
-          curl -s -o ./dist/.well-known/apple-developer-merchantid-domain-association https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association
-
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
