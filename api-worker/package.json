@@ -1,0 +1,16 @@
+{
+  "name": "brandilab-api-worker",
+  "version": "1.0.0",
+  "description": "API Worker for Snipcart and Stripe Integration",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "stripe": "^17.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

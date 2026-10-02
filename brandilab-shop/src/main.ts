@@ -10,7 +10,7 @@ import { i18n } from './i18n'
 // pointing `current` at the new URL (otherwise Vue Router would later restore the old URL).
 function withRouterState(state: any, url?: string | URL | null) {
   if (state && state.current) return state
-  const merged = { ...(history.state || {}), ...(state || {}) }
+  const merged = { ...history.state, ...state }
   if (url != null && merged.current) {
     const { pathname, search, hash } = new URL(url, location.href)
     const base = import.meta.env.BASE_URL.replace(/\/$/, '')

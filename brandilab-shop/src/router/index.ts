@@ -6,6 +6,7 @@ const AboutView = () => import('@/views/AboutView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
 const ThankYouView = () => import('@/views/ThankYouView.vue')
 const AdminDashboard = () => import('@/views/AdminDashboard.vue')
+const PayView = () => import('@/views/PayView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,11 @@ const router = createRouter({
       name: 'AdminDashboard',
       component: AdminDashboard,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/pay',
+      name: 'pay',
+      component: PayView,
     },
   ],
   scrollBehavior(to, from, savedPosition) {

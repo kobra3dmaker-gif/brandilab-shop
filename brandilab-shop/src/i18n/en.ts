@@ -207,6 +207,17 @@ const en: typeof it = {
     accept: 'Accept',
     decline: 'Decline',
   },
+  pay: {
+    title: 'Express Checkout',
+    errorMissingToken: 'Missing token. Return to cart and try again.',
+    statusInit: 'Initializing payment...',
+    statusProcessing: 'Processing...',
+    statusFinalizing: 'Confirming payment...',
+    errorGeneric: 'An error occurred. Please try again or use another payment method.',
+    errorFinalize: 'Error confirming payment. Please contact support.',
+    noWallet: 'Apple Pay or Google Pay are not available on this device or browser. Please go back and select card payment.',
+    backToShop: 'Back to Shop'
+  }
 }
 
 export default en

@@ -206,4 +206,15 @@ export default {
     accept: 'Accetta',
     decline: 'Rifiuta',
   },
+  pay: {
+    title: 'Pagamento Rapido',
+    errorMissingToken: 'Token mancante. Torna al carrello e riprova.',
+    statusInit: 'Inizializzazione pagamento...',
+    statusProcessing: 'Elaborazione in corso...',
+    statusFinalizing: 'Conferma del pagamento...',
+    errorGeneric: 'Si è verificato un errore. Riprova o usa un altro metodo.',
+    errorFinalize: 'Errore nella conferma del pagamento. Contatta l\'assistenza.',
+    noWallet: 'Apple Pay o Google Pay non sono disponibili su questo dispositivo o browser. Per favore, torna indietro e seleziona il pagamento con carta.',
+    backToShop: 'Torna al Negozio'
+  }
 }
