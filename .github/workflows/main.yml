@@ -55,6 +55,7 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: './brandilab-shop/dist'
+          include-hidden-files: true
 
   deploy:
     environment:
