@@ -210,7 +210,7 @@ const recommendedProducts = computed(() => {
   .product-image-col {
     flex: 0 0 40%;
     position: sticky;
-    top: calc(var(--navbar-height) + 1rem);
+    top: calc(var(--navbar-total-height) + 1rem);
   }
 
   .product-info-col {
@@ -221,7 +221,7 @@ const recommendedProducts = computed(() => {
   .product-buy-box {
     flex: 0 0 280px;
     position: sticky;
-    top: calc(var(--navbar-height) + 1rem);
+    top: calc(var(--navbar-total-height) + 1rem);
   }
 }
 

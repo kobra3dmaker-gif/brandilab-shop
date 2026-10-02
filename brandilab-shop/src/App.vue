@@ -32,6 +32,13 @@ useOrderSync()
 
 .main-content {
   flex: 1;
-  padding-top: var(--navbar-height);
+  padding-top: var(--navbar-total-height);
+}
+
+/* On tablet/mobile the secondary nav strip is hidden */
+@media (max-width: 1024px) {
+  .main-content {
+    padding-top: var(--navbar-height);
+  }
 }
 </style>

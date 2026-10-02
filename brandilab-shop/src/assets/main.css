@@ -107,6 +107,8 @@
 
   /* Layout */
   --navbar-height: 108px;
+  --navbar-secondary-height: 36px;         /* secondary nav strip (desktop only) */
+  --navbar-total-height: 144px;            /* main (108) + secondary (36) on desktop */
   --container-max: 1440px;
   --container-padding: 1.5rem;
 }
@@ -129,23 +131,133 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Keep the Snipcart cart below the fixed navbar and prevent it being clipped at the bottom.
-   dvh (dynamic viewport height) accounts for the browser chrome bar on mobile;
-   falls back to vh for older browsers. */
+/* ============================================
+   Snipcart Layout Overrides
+   ============================================
+   The fixed navbar consists of:
+     • .navbar-main   → var(--navbar-height) = 108 px
+     • .navbar-secondary (desktop ≥ 1025 px only) → 36 px
+   Total on desktop = 144 px, on mobile/tablet ≤ 1024 px = 108 px.
+
+   Snipcart's default CSS changes the modal from full-screen (mobile) to a
+   right-hand sidebar (desktop ≥ 768 px). We need to push it down below the
+   navbar in both modes, recalculate the available height, and make sure
+   nothing overflows the viewport.
+*/
+
+/* --- Desktop (sidebar cart) ≥ 1025 px ------------------------------------ */
 .snipcart-modal__container {
-  top: var(--navbar-height);
-  height: calc(100vh - var(--navbar-height));
-  height: calc(100dvh - var(--navbar-height));
+  top: var(--navbar-total-height) !important;
+  height: calc(100vh - var(--navbar-total-height)) !important;
+  height: calc(100dvh - var(--navbar-total-height)) !important;
   overflow-y: auto;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-/* On mobile the navbar is still visible but the cart should use the full remaining viewport */
-@media (max-width: 767px) {
+/* --- Tablet ≤ 1024 px — secondary nav hidden, Snipcart goes full-width --- */
+@media (max-width: 1024px) {
   .snipcart-modal__container {
-    top: var(--navbar-height);
-    height: calc(100vh - var(--navbar-height));
-    height: calc(100dvh - var(--navbar-height));
+    top: var(--navbar-height) !important;
+    height: calc(100vh - var(--navbar-height)) !important;
+    height: calc(100dvh - var(--navbar-height)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* --- Small mobile ≤ 480 px — extra protection for very narrow screens ---- */
+@media (max-width: 480px) {
+  .snipcart-modal__container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* --- Prevent horizontal overflow inside every Snipcart view -------------- */
+.snipcart-modal,
+.snipcart-layout,
+.snipcart-layout__content,
+.snipcart-cart__content,
+.snipcart-checkout__content,
+.snipcart-order__content {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Cart item lines have horizontal margins that push content off-screen on
+   narrow viewports — collapse them on mobile */
+@media (max-width: 767px) {
+  .snipcart-item-line__container {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 16px !important;
+  }
+
+  .snipcart-item-line__quantity {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .snipcart-item-line__body {
+    flex-wrap: wrap;
+  }
+}
+
+/* Form fields (shipping / billing / payment) must not exceed the viewport */
+.snipcart-form__field,
+.snipcart-form__cell--large,
+.snipcart-form__cell--tidy,
+.snipcart-textbox {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.snipcart-form__row {
+  flex-wrap: wrap;
+}
+
+/* Long text (product names, descriptions, error messages) should wrap */
+.snipcart-item-line__header__title,
+.snipcart-flash-message,
+.snipcart-cart__footer {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Checkout sidebar layout — prevent sidebar from being too wide on small tablets */
+@media (max-width: 960px) {
+  .snipcart-layout-sidebar__container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .snipcart-layout-sidebar__aside,
+  .snipcart-layout-sidebar__main {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Cart footer & discount box — prevent overflow on mobile */
+@media (max-width: 767px) {
+  .snipcart-cart__footer {
+    padding: 16px !important;
+  }
+
+  .snipcart-cart__secondary-header {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    min-height: 56px !important;
+  }
+
+  .snipcart-discount-box {
+    max-width: 100% !important;
   }
 }
 
