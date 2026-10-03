@@ -42,6 +42,16 @@ const increaseQuantity = () => {
   quantity.value++
 }
 
+const isAdded = ref(false)
+const handleAddToCart = () => {
+  if (!product.value) return
+  addItem(product.value, quantity.value)
+  isAdded.value = true
+  setTimeout(() => {
+    isAdded.value = false
+  }, 1500)
+}
+
 const totalPrice = computed(() => (product.value ? product.value.price * quantity.value : 0))
 
 const recommendedProducts = computed(() => {
@@ -118,9 +128,11 @@ const recommendedProducts = computed(() => {
           
           <button 
             class="btn btn-add"
-            @click="addItem(product, quantity)"
+            :class="{ 'is-added': isAdded }"
+            @click="handleAddToCart"
+            :disabled="isAdded"
           >
-            Aggiungi al carrello
+            {{ isAdded ? 'Aggiunto!' : 'Aggiungi al carrello' }}
           </button>
           
           <div class="secure-transaction">
@@ -382,19 +394,26 @@ const recommendedProducts = computed(() => {
   box-shadow: 0 2px 5px rgba(213,217,217,.5);
 }
 
-.btn-add:hover {
+.btn-add:hover:not(:disabled) {
   background-color: #f7ca00;
   border-color: #f2c200;
   transform: none;
 }
 
+.btn-add.is-added {
+  background-color: var(--color-success, #2ecc71);
+  color: white;
+  border-color: var(--color-success, #2ecc71);
+  cursor: default;
+}
+
 /* Dark mode adjustment for buy button */
-:root[data-theme='dark'] .btn-add {
+:root[data-theme='dark'] .btn-add:not(.is-added) {
   background-color: var(--color-accent);
   color: white;
   border-color: var(--color-accent);
 }
-:root[data-theme='dark'] .btn-add:hover {
+:root[data-theme='dark'] .btn-add:not(.is-added):hover:not(:disabled) {
   background-color: var(--color-accent-hover);
 }
 

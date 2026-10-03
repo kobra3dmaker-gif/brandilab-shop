@@ -3,7 +3,7 @@ import type { Product } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { urlFor } from '@/sanity'
 import { useCart } from '@/composables/useCart'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   product: Product
@@ -11,6 +11,16 @@ const props = defineProps<{
 
 const { t, n } = useI18n()
 const { addItem } = useCart()
+
+const isAdded = ref(false)
+
+const handleAddToCart = () => {
+  addItem(props.product)
+  isAdded.value = true
+  setTimeout(() => {
+    isAdded.value = false
+  }, 1500)
+}
 
 // Deterministic hash function for pseudo-random effects
 const hashStr = (str: string) => {
@@ -105,13 +115,20 @@ const swatches = computed(() => {
 
       <button
         class="add-to-cart-btn"
-        @click="addItem(product)"
+        :class="{ 'is-added': isAdded }"
+        @click="handleAddToCart"
+        :disabled="isAdded"
       >
-        <span class="btn-text">{{ t('product.addToCart') }}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="cart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <span class="btn-text">
+          {{ isAdded ? 'Aggiunto!' : t('product.addToCart') }}
+        </span>
+        <svg v-if="!isAdded" xmlns="http://www.w3.org/2000/svg" class="cart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="9" cy="21" r="1"/>
           <circle cx="20" cy="21" r="1"/>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" class="cart-icon check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
         </svg>
       </button>
     </div>
@@ -269,8 +286,23 @@ const swatches = computed(() => {
   margin-top: 0.5rem;
 }
 
-.add-to-cart-btn:hover {
+.add-to-cart-btn:hover:not(:disabled) {
   background-color: #006666;
+}
+
+.add-to-cart-btn.is-added {
+  background-color: var(--color-success, #2ecc71);
+  color: white;
+  cursor: default;
+}
+
+.check-icon {
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes scaleIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
 }
 
 .cart-icon {
