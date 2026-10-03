@@ -4,9 +4,8 @@ const HomeView = () => import('@/views/HomeView.vue')
 const ProductView = () => import('@/views/ProductView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
-const ThankYouView = () => import('@/views/ThankYouView.vue')
+const CheckoutSuccessView = () => import('@/views/CheckoutSuccessView.vue')
 const AdminDashboard = () => import('@/views/AdminDashboard.vue')
-const PayView = () => import('@/views/PayView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,13 +32,16 @@ const router = createRouter({
     },
     {
       path: '/order-confirmation',
-      name: 'order-confirmation',
-      component: ThankYouView,
+      redirect: '/checkout-success'
     },
     {
       path: '/thank-you',
-      name: 'thank-you',
-      component: ThankYouView,
+      redirect: '/checkout-success'
+    },
+    {
+      path: '/checkout-success',
+      name: 'checkout-success',
+      component: CheckoutSuccessView,
     },
     {
       path: '/admin-dashboard',
@@ -47,64 +49,13 @@ const router = createRouter({
       component: AdminDashboard,
       meta: { requiresAuth: true },
     },
-    {
-      path: '/pay',
-      name: 'pay',
-      component: PayView,
-    },
   ],
-  scrollBehavior(to, from, savedPosition) {
-    // Opening/closing the Snipcart cart only changes the hash — keep the page where it was
-    if (to.path === from.path && (isSnipcartHash(to.hash) || isSnipcartHash(from.hash))) {
-      return false
-    }
+  scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     }
     return { top: 0 }
   },
-})
-
-// Snipcart routes live in the URL hash (e.g. /shop#/cart, /shop#/checkout)
-function isSnipcartHash(hash: string) {
-  return hash.startsWith('#/')
-}
-
-/**
- * Close the Snipcart cart and resolve once it has unwound its history entries.
- * Snipcart closes by calling history.back() (once per cart step), so we wait
- * until the URL no longer points at a Snipcart route.
- */
-function closeSnipcart(): Promise<void> {
-  return new Promise((resolve) => {
-    const finish = () => {
-      window.removeEventListener('popstate', onPopState)
-      clearTimeout(timeout)
-      // Let Snipcart and Vue Router finish handling the popstate first
-      setTimeout(resolve)
-    }
-    const onPopState = () => {
-      if (!isSnipcartHash(location.hash)) finish()
-    }
-    const timeout = setTimeout(finish, 1000)
-    window.addEventListener('popstate', onPopState)
-    ;(window as any).Snipcart?.api.theme.cart.close()
-  })
-}
-
-// Navigating anywhere (even to the same page, e.g. "Home" while on /#/cart) while the cart
-// is open would push the new page on top of the cart's history entry and leave the cart
-// open as an overlay that can no longer be closed. Close the cart first, then navigate.
-router.beforeEach((to, from) => {
-  const leavingOpenCart =
-    isSnipcartHash(from.hash) &&
-    location.hash === from.hash && // still on the cart entry, i.e. not a back/forward
-    !isSnipcartHash(to.hash)
-
-  if (leavingOpenCart) {
-    closeSnipcart().then(() => router.push(to.fullPath))
-    return false
-  }
 })
 
 // Admin authentication guard

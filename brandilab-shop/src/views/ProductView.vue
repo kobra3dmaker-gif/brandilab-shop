@@ -5,12 +5,13 @@ import { useI18n } from 'vue-i18n'
 import { useProducts } from '@/composables/useProducts'
 import { urlFor } from '@/sanity'
 import { trackEvent } from '@/analytics'
-import { SNIPCART_PRODUCTS_URL } from '@/snipcart'
+import { useCart } from '@/composables/useCart'
 import ProductGrid from '@/components/ProductGrid.vue'
 
 const route = useRoute()
 const { t, n } = useI18n()
 const { getProductById, products } = useProducts()
+const { addItem } = useCart()
 
 const productId = computed(() => route.params.id as string)
 const product = computed(() => getProductById(productId.value))
@@ -116,14 +117,8 @@ const recommendedProducts = computed(() => {
           </div>
           
           <button 
-            class="snipcart-add-item btn btn-add"
-            :data-item-id="product._id"
-            :data-item-price="product.price"
-            :data-item-url="SNIPCART_PRODUCTS_URL"
-            :data-item-description="product.description.length > 120 ? product.description.substring(0, 120) + '...' : product.description"
-            :data-item-image="urlFor(product.image).width(100).url()"
-            :data-item-name="product.title"
-            :data-item-quantity="quantity"
+            class="btn btn-add"
+            @click="addItem(product, quantity)"
           >
             Aggiungi al carrello
           </button>

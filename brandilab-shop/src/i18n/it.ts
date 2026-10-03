@@ -206,17 +206,14 @@ export default {
     accept: 'Accetta',
     decline: 'Rifiuta',
   },
-  pay: {
-    title: 'Pagamento Rapido',
-    errorMissingToken: 'Token mancante. Torna al carrello e riprova.',
-    statusInit: 'Inizializzazione pagamento...',
-    statusProcessing: 'Elaborazione in corso...',
-    statusFinalizing: 'Conferma del pagamento...',
-    errorGeneric: 'Si è verificato un errore durante l\'elaborazione. Riprova o usa un altro metodo.',
-    errorFinalize: 'Errore nella conferma del pagamento. Contatta l\'assistenza.',
-    errorSession: 'Sessione scaduta o non valida. Torna al carrello.',
-    errorInit: 'Errore di caricamento. Riprova o usa un altro metodo.',
-    noWallet: 'Apple Pay o Google Pay non sono disponibili su questo dispositivo o browser. Per favore, torna indietro e seleziona il pagamento con carta.',
-    backToShop: 'Torna al Negozio'
+  cart: {
+    title: 'Il tuo carrello',
+    empty: 'Il carrello è vuoto.',
+    remove: 'Rimuovi',
+    clear: 'Svuota carrello',
+    total: 'Totale',
+    checkout: 'Procedi al checkout',
+    processing: 'Elaborazione...',
+    checkoutError: 'Errore durante il checkout. Riprova.'
   }
 }

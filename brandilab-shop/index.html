@@ -82,9 +82,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Snipcart CSS -->
-    <link rel="stylesheet" href="https://cdn.snipcart.com/themes/v3.9.0/default/snipcart.css" />
   </head>
   <body>
     <!-- GitHub Pages SPA redirect handler (companion to 404.html) -->
@@ -99,22 +96,6 @@
       }(window.location))
     </script>
     <div id="app"></div>
-
-    <!-- Snipcart JS & Configuration -->
-    <script async src="https://cdn.snipcart.com/themes/v3.9.0/default/snipcart.js"></script>
-    <!--
-      Keep exactly ONE #snipcart element: Snipcart only reads the first one.
-      - data-api-key: your Snipcart PUBLIC API key (Dashboard → Account → API Keys).
-        Use the TEST key while testing, switch to the LIVE key for real payments.
-      - data-currency: every price on the site is in euros. EUR must also be enabled
-        in the Snipcart Dashboard → Regional Settings.
-      - Payments go through the Stripe account connected in Dashboard → Payment Gateway.
-    -->
-    <div hidden id="snipcart"
-      data-api-key="MmU3ZmM4YjQtOTYzZC00ZDliLWEwNWItZjBkOTNjNzk5ZTg2NjM5MjUxMDIxODAxNjU1ODAy"
-      data-currency="eur"
-    ></div>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

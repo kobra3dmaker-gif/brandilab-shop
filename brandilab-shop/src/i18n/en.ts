@@ -207,18 +207,15 @@ const en: typeof it = {
     accept: 'Accept',
     decline: 'Decline',
   },
-  pay: {
-    title: 'Express Checkout',
-    errorMissingToken: 'Missing token. Return to cart and try again.',
-    statusInit: 'Initializing payment...',
-    statusProcessing: 'Processing...',
-    statusFinalizing: 'Confirming payment...',
-    errorGeneric: 'An error occurred during processing. Please try again or use another payment method.',
-    errorFinalize: 'Error confirming payment. Please contact support.',
-    errorSession: 'Session expired or invalid. Please return to your cart.',
-    errorInit: 'Loading error. Please try again or use another payment method.',
-    noWallet: 'Apple Pay or Google Pay are not available on this device or browser. Please go back and select card payment.',
-    backToShop: 'Back to Shop'
+  cart: {
+    title: 'Your Cart',
+    empty: 'Your cart is empty.',
+    remove: 'Remove',
+    clear: 'Clear Cart',
+    total: 'Total',
+    checkout: 'Proceed to Checkout',
+    processing: 'Processing...',
+    checkoutError: 'Error during checkout. Please try again.'
   }
 }
 

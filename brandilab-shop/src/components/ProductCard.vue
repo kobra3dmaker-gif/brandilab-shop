@@ -2,7 +2,7 @@
 import type { Product } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { urlFor } from '@/sanity'
-import { SNIPCART_PRODUCTS_URL } from '@/snipcart'
+import { useCart } from '@/composables/useCart'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -10,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const { t, n } = useI18n()
+const { addItem } = useCart()
 
 // Deterministic hash function for pseudo-random effects
 const hashStr = (str: string) => {
@@ -103,13 +104,8 @@ const swatches = computed(() => {
       </div>
 
       <button
-        class="snipcart-add-item add-to-cart-btn"
-        :data-item-id="product._id"
-        :data-item-price="product.price"
-        :data-item-url="SNIPCART_PRODUCTS_URL"
-        :data-item-description="product.description"
-        :data-item-image="product.image ? urlFor(product.image).width(100).url() : ''"
-        :data-item-name="product.title"
+        class="add-to-cart-btn"
+        @click="addItem(product)"
       >
         <span class="btn-text">{{ t('product.addToCart') }}</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="cart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

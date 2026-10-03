@@ -28,7 +28,7 @@ function optionsHandler(request) {
 
 export default {
   async fetch(request, env, ctx) {
-    if (request.method === 'OPTIONS') return optionsHandler();
+    if (request.method === 'OPTIONS') return optionsHandler(request);
 
     const url = new URL(request.url);
     const path = url.pathname;
@@ -128,6 +128,84 @@ export default {
         } catch (e) {
           console.error('Finalize error:', e);
           return json({ error: 'finalize_failed' }, 500, request);
+        }
+      }
+      // ── Stripe Checkout Session (replaces Snipcart) ──
+      if (path === '/api/create-checkout-session' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const { items: cartItems } = body;
+
+        if (!Array.isArray(cartItems) || cartItems.length === 0) {
+          return json({ error: 'empty_cart' }, 400, request);
+        }
+
+        // Validate structure: each item must have id (string) and quantity (positive integer)
+        for (const item of cartItems) {
+          if (!item.id || typeof item.id !== 'string' || !Number.isInteger(item.quantity) || item.quantity < 1) {
+            return json({ error: 'invalid_item' }, 400, request);
+          }
+        }
+
+        try {
+          // Fetch product prices from Sanity (server-side — NEVER trust client prices)
+          const ids = cartItems.map((i) => `"${i.id}"`).join(',');
+          const query = `*[_type == "product" && _id in [${ids}]]{ _id, title, price, "imageUrl": image.asset->url }`;
+          const sanityUrl = `https://aslz605n.api.sanity.io/v2023-05-03/data/query/production?query=${encodeURIComponent(query)}`;
+
+          const sanityRes = await fetch(sanityUrl);
+          if (!sanityRes.ok) {
+            console.error('Sanity fetch failed:', sanityRes.status);
+            return json({ error: 'product_lookup_failed' }, 502, request);
+          }
+
+          const { result: products } = await sanityRes.json();
+
+          // Build a map for quick lookup
+          const productMap = new Map();
+          for (const p of products) {
+            productMap.set(p._id, p);
+          }
+
+          // Verify all requested products exist and have prices
+          const lineItems = [];
+          for (const cartItem of cartItems) {
+            const product = productMap.get(cartItem.id);
+            if (!product || typeof product.price !== 'number') {
+              return json({ error: 'product_not_found', id: cartItem.id }, 400, request);
+            }
+
+            lineItems.push({
+              price_data: {
+                currency: 'eur',
+                product_data: {
+                  name: product.title,
+                  ...(product.imageUrl ? { images: [product.imageUrl] } : {}),
+                },
+                unit_amount: Math.round(product.price * 100),
+              },
+              quantity: cartItem.quantity,
+            });
+          }
+
+          const SITE = env.SITE_URL || 'https://www.brandilab.it';
+
+          const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+          const session = await stripe.checkout.sessions.create({
+            mode: 'payment',
+            line_items: lineItems,
+            // Enable all available payment methods (cards, Apple Pay, Google Pay, PayPal, etc.)
+            // via Stripe Dashboard settings — no need to hardcode payment_method_types
+            success_url: `${SITE}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${SITE}/`,
+            shipping_address_collection: {
+              allowed_countries: ['IT', 'DE', 'FR', 'ES', 'AT', 'BE', 'NL', 'PT', 'CH', 'GB', 'US'],
+            },
+          });
+
+          return json({ url: session.url }, 200, request);
+        } catch (e) {
+          console.error('Checkout session error:', e);
+          return json({ error: 'checkout_failed' }, 500, request);
         }
       }
 

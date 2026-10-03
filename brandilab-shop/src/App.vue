@@ -2,15 +2,13 @@
 import TheNavbar from '@/components/TheNavbar.vue'
 import TheFooter from '@/components/TheFooter.vue'
 import CookieBanner from '@/components/CookieBanner.vue'
-import { useOrderSync } from '@/composables/useOrderSync'
-
-// Initialize automatic order sync: Snipcart orders → Admin Dashboard (Google Sheets)
-useOrderSync()
+import CartDrawer from '@/components/CartDrawer.vue'
 </script>
 
 <template>
   <div class="app-layout">
     <TheNavbar />
+    <CartDrawer />
     <main class="main-content">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">

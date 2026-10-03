@@ -64,11 +64,7 @@ export const i18n = createI18n({
   numberFormats: { it: { currency }, en: { currency } },
 })
 
-function setSnipcartLanguage(locale: Locale) {
-  ;(window as any).Snipcart?.api?.session?.setLanguage?.(locale)
-}
-
-// Keep the page itself and the Snipcart cart in the current language
+// Keep the page itself in the current language
 watch(
   i18n.global.locale,
   (locale) => {
@@ -77,14 +73,9 @@ watch(
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute('content', i18n.global.t('meta.description'))
-    setSnipcartLanguage(locale as Locale)
   },
   { immediate: true },
 )
-
-document.addEventListener('snipcart.ready', () => {
-  setSnipcartLanguage(i18n.global.locale.value as Locale)
-})
 
 export function useLocale() {
   const { locale } = useI18n()

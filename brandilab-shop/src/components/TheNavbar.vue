@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useSnipcart } from '@/composables/useSnipcart'
+import { useCart } from '@/composables/useCart'
 import { useTheme } from '@/composables/useTheme'
 import { useI18n } from 'vue-i18n'
 import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n'
@@ -8,7 +8,7 @@ import { useProducts } from '@/composables/useProducts'
 import { useRouter } from 'vue-router'
 import logo from '@/assets/logo.webp'
 
-const { itemCount, openCart } = useSnipcart()
+const { itemCount, toggleCart } = useCart()
 const { isDark, toggleTheme } = useTheme() // Theme toggle available for UI
 const { t } = useI18n()
 const { locale, setLocale } = useLocale()
@@ -126,13 +126,13 @@ onUnmounted(() => {
           </button>
 
           <!-- Cart Button -->
-          <button class="action-btn cart-btn snipcart-checkout" @click="openCart" aria-label="Carrello">
+          <button class="action-btn cart-btn" @click="toggleCart" aria-label="Carrello">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9" cy="21" r="1"></circle>
               <circle cx="20" cy="21" r="1"></circle>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            <span class="cart-badge snipcart-items-count">{{ itemCount }}</span>
+            <span class="cart-badge">{{ itemCount }}</span>
           </button>
 
           <!-- Mobile Menu Toggle -->
