@@ -200,6 +200,9 @@ export default {
             shipping_address_collection: {
               allowed_countries: ['IT', 'DE', 'FR', 'ES', 'AT', 'BE', 'NL', 'PT', 'CH', 'GB', 'US'],
             },
+            phone_number_collection: {
+              enabled: true
+            }
           });
 
           return json({ url: session.url }, 200, request);
