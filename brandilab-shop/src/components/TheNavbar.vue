@@ -402,14 +402,14 @@ onUnmounted(() => {
 
 .dropdown-item {
   padding: 0.75rem 1rem;
-  color: #333;
+  color: var(--color-text);
   text-decoration: none;
   font-size: 0.95rem;
   transition: background-color 0.2s;
 }
 
 .dropdown-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-accent-light);
   color: var(--color-accent, #16a085);
 }
 
