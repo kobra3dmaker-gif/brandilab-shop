@@ -29,12 +29,12 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
   right: 16px;
   bottom: 16px;
   z-index: 900; /* below the navbar (1000) and the Snipcart cart */
-  max-width: 720px;
-  margin: 0 auto;
+  max-width: calc(100vw - 32px);
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: 12px;
+  padding: 16px;
   background-color: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
@@ -44,29 +44,31 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
 }
 
 .cookie-text {
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .cookie-text strong {
   display: block;
   margin-bottom: 4px;
   color: var(--color-primary);
+  font-size: 0.95rem;
 }
 
 .cookie-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .cookie-btn {
   flex: 1;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: var(--radius-sm);
-  border: 2px solid var(--color-accent);
+  border: 1px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
   font-weight: 600;
+  font-size: 0.85rem;
   transition: var(--transition);
 }
 
@@ -82,12 +84,10 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
 
 @media (min-width: 640px) {
   .cookie-banner {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .cookie-actions {
-    flex-shrink: 0;
+    right: auto;
+    left: 24px;
+    bottom: 24px;
+    max-width: 360px;
   }
 }
 </style>

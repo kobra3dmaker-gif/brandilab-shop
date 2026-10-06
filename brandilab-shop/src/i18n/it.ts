@@ -201,8 +201,8 @@ export default {
     subscribe: 'Iscriviti',
   },
   cookies: {
-    title: 'Cookie e statistiche',
-    text: 'Con il tuo consenso usiamo Google Analytics per capire come viene usato il sito e migliorarlo. Nessun dato viene raccolto se rifiuti.',
+    title: 'La tua privacy è importante',
+    text: 'Usiamo alcuni cookie solo per capire cosa piace ai visitatori e migliorare il sito. Non tracciamo i tuoi dati per le pubblicità e non li vendiamo a nessuno. Scegli tu!',
     accept: 'Accetta',
     decline: 'Rifiuta',
   },

@@ -202,8 +202,8 @@ const en: typeof it = {
     subscribe: 'Subscribe',
   },
   cookies: {
-    title: 'Cookies and statistics',
-    text: 'With your consent we use Google Analytics to understand how the site is used and improve it. No data is collected if you decline.',
+    title: 'Your privacy matters',
+    text: 'We only use a few cookies to see what people like and make our site better. We don’t track you for ads or sell your data. The choice is entirely yours!',
     accept: 'Accept',
     decline: 'Decline',
   },
