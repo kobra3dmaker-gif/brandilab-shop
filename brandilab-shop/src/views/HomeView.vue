@@ -379,13 +379,14 @@ const applyPriceInputs = () => {
   }
 
   .shop-sidebar {
-    width: 230px;
+    width: 300px;
     flex-shrink: 0;
     position: sticky;
     top: calc(var(--navbar-height) + 1rem);
     height: auto;
     transform: none;
-    padding: 0;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
     box-shadow: none;
     z-index: 1;
   }
