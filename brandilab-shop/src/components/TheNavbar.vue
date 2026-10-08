@@ -1,535 +1,453 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useCart } from '@/composables/useCart'
 import { useTheme } from '@/composables/useTheme'
-import { useI18n } from 'vue-i18n'
 import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n'
-import { useProducts } from '@/composables/useProducts'
-import { useRouter } from 'vue-router'
+import { cartFlood, type Field } from '@/composables/useCatalog'
 import logo from '@/assets/logo.webp'
 
-const { itemCount, toggleCart } = useCart()
-const { isDark, toggleTheme } = useTheme() // Theme toggle available for UI
+const { itemCount, openCart } = useCart()
+const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
 const { locale, setLocale } = useLocale()
-const { searchQuery } = useProducts()
-const router = useRouter()
+const route = useRoute()
 
 const isScrolled = ref(false)
-const showMobileMenu = ref(false)
-const showCategoriesDropdown = ref(false)
+const menuOpen = ref(false)
+const flood = ref<Field | null>(null)
+const bump = ref(false)
+let floodTimer: ReturnType<typeof setTimeout> | undefined
 
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20
+const onScroll = () => {
+  isScrolled.value = window.scrollY > 8
 }
 
-const doSearch = () => {
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/#shop')
-  }
-}
+watch(cartFlood, (value) => {
+  if (!value) return
+  flood.value = value.field
+  bump.value = false
+  requestAnimationFrame(() => (bump.value = true))
+  clearTimeout(floodTimer)
+  floodTimer = setTimeout(() => {
+    flood.value = null
+    bump.value = false
+  }, 900)
+})
 
-const toggleMobileMenu = () => {
-  showMobileMenu.value = !showMobileMenu.value
-}
+watch(
+  () => route.fullPath,
+  () => (menuOpen.value = false),
+)
 
-const toggleCategories = () => {
-  showCategoriesDropdown.value = !showCategoriesDropdown.value
+watch(menuOpen, (open) => {
+  document.documentElement.style.overflow = open ? 'hidden' : ''
+})
+
+const onKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') menuOpen.value = false
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('keydown', onKey)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('keydown', onKey)
+  clearTimeout(floodTimer)
 })
+
+const links = [
+  { to: { path: '/', hash: '#catalogo' }, key: 'nav.catalogue', name: 'home' },
+  { to: '/about', key: 'nav.about', name: 'about' },
+  { to: '/contact', key: 'nav.contact', name: 'contact' },
+] as const
 </script>
 
 <template>
-  <header class="navbar-wrapper" :class="{ 'is-scrolled': isScrolled }">
-    <!-- Main Navbar -->
-    <nav class="navbar-main">
-      <div class="navbar-container">
-        
-        <!-- Left: Logo & Brand -->
-        <RouterLink to="/" class="navbar-brand">
-          <img :src="logo" alt="BrandiLab" class="brand-logo" />
-          <span class="brand-text">BrandiLab</span>
+  <header class="masthead" :class="{ 'is-scrolled': isScrolled || menuOpen }">
+    <div class="masthead-row">
+      <RouterLink to="/" class="brand" aria-label="BrandiLab — Home">
+        <img :src="logo" alt="" class="brand-roundel" width="40" height="40" />
+        <span class="brand-word">BrandiLab</span>
+      </RouterLink>
+
+      <nav class="links desktop" :aria-label="t('nav.mainNav')">
+        <RouterLink
+          v-for="link in links"
+          :key="link.key"
+          :to="link.to"
+          class="link"
+          :class="{ 'is-current': route.name === link.name }"
+        >
+          {{ t(link.key) }}
         </RouterLink>
+      </nav>
 
-        <!-- Center: Search Bar (Hidden on Mobile) -->
-        <div class="navbar-search desktop-only">
-          <input 
-            type="text" 
-            class="search-input" 
-            :placeholder="t('nav.searchPlaceholder') || 'Cerca prodotti...'" 
-            v-model="searchQuery"
-            @keyup.enter="doSearch"
-          />
-          <button class="search-button" aria-label="Cerca" @click="doSearch">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+      <div class="tools">
+        <div class="lang desktop" role="group" :aria-label="t('nav.language')">
+          <button
+            v-for="loc in SUPPORTED_LOCALES"
+            :key="loc"
+            class="lang-btn"
+            :class="{ 'is-on': locale === loc }"
+            :aria-pressed="locale === loc"
+            :title="LOCALE_NAMES[loc]"
+            @click="setLocale(loc)"
+          >
+            {{ loc.toUpperCase() }}
           </button>
         </div>
 
-        <!-- Right: Actions -->
-        <div class="navbar-actions">
-          
-          <!-- Categories Dropdown (Desktop Only) -->
-          <div class="dropdown-wrapper desktop-only">
-            <button class="action-btn text-btn" @click="toggleCategories">
-              <span>{{ t('nav.browseCategories') || 'Sfoglia categorie' }}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotated': showCategoriesDropdown }">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div v-if="showCategoriesDropdown" class="dropdown-menu">
-              <!-- Dummy links for categories -->
-              <RouterLink to="/" class="dropdown-item">Stampe 3D</RouterLink>
-              <RouterLink to="/" class="dropdown-item">Taglio Laser</RouterLink>
-              <RouterLink to="/" class="dropdown-item">Gadget</RouterLink>
-            </div>
-          </div>
+        <button
+          class="icon-btn desktop"
+          :aria-label="isDark ? t('nav.themeToLight') : t('nav.themeToDark')"
+          @click="toggleTheme"
+        >
+          <svg v-if="!isDark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+            <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" />
+          </svg>
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+          </svg>
+        </button>
 
-          <!-- Language Switcher -->
-          <div class="lang-switcher">
-            <button 
-              v-for="loc in SUPPORTED_LOCALES" 
-              :key="loc"
-              @click="setLocale(loc)"
-              class="lang-btn"
-              :class="{ 'active': locale === loc }"
-            >
-              {{ loc.toUpperCase() }}
-            </button>
-          </div>
+        <button class="cart" :aria-label="t('nav.cartLabel', { count: itemCount }, itemCount)" @click="openCart">
+          <span class="cart-word">{{ t('nav.cart') }}</span>
+          <span
+            class="cart-square tabular"
+            :class="[flood ? `flood-${flood}` : '', { bump }]"
+            data-cart-target
+          >
+            {{ itemCount }}
+          </span>
+        </button>
 
-          <!-- Theme Toggle -->
-          <button class="action-btn theme-btn" @click="toggleTheme" aria-label="Cambia tema">
-            <svg v-if="!isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-          </button>
-
-          <!-- Cart Button -->
-          <button class="action-btn cart-btn" @click="toggleCart" aria-label="Carrello">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            <span class="cart-badge">{{ itemCount }}</span>
-          </button>
-
-          <!-- Mobile Menu Toggle -->
-          <button class="action-btn mobile-menu-toggle mobile-only" @click="toggleMobileMenu" aria-label="Menu">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line v-if="!showMobileMenu" x1="3" y1="12" x2="21" y2="12"></line>
-              <line v-if="!showMobileMenu" x1="3" y1="6" x2="21" y2="6"></line>
-              <line v-if="!showMobileMenu" x1="3" y1="18" x2="21" y2="18"></line>
-              <line v-if="showMobileMenu" x1="18" y1="6" x2="6" y2="18"></line>
-              <line v-if="showMobileMenu" x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Secondary Nav Strip (Desktop Only) -->
-    <div class="navbar-secondary desktop-only">
-      <div class="secondary-container">
-        <RouterLink to="/" class="secondary-link">{{ t('nav.newArrivals') || 'Novità' }}</RouterLink>
-        <RouterLink to="/" class="secondary-link">{{ t('nav.bestsellers') || 'Bestseller' }}</RouterLink>
-        <RouterLink to="/" class="secondary-link">{{ t('nav.giftIdeas') || 'Idee regalo' }}</RouterLink>
-        <RouterLink to="/" class="secondary-link">{{ t('nav.allProducts') || 'Tutti i prodotti' }}</RouterLink>
-      </div>
-    </div>
-
-    <!-- Mobile Drawer -->
-    <div class="mobile-drawer" :class="{ 'is-open': showMobileMenu }">
-      <div class="mobile-search">
-        <input 
-          type="text" 
-          class="search-input" 
-          :placeholder="t('nav.searchPlaceholder') || 'Cerca prodotti...'" 
-          v-model="searchQuery"
-          @keyup.enter="doSearch"
-        />
-        <button class="search-button" @click="doSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        <button
+          class="icon-btn mobile"
+          :aria-expanded="menuOpen"
+          aria-controls="mobile-menu"
+          :aria-label="menuOpen ? t('nav.closeMenu') : t('nav.openMenu')"
+          @click="menuOpen = !menuOpen"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="square" aria-hidden="true">
+            <path v-if="!menuOpen" d="M3 7h18M3 17h18" />
+            <path v-else d="M5 5l14 14M19 5L5 19" />
           </svg>
         </button>
       </div>
-      
-      <nav class="mobile-nav-links">
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.newArrivals') || 'Novità' }}</RouterLink>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.bestsellers') || 'Bestseller' }}</RouterLink>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.giftIdeas') || 'Idee regalo' }}</RouterLink>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">{{ t('nav.allProducts') || 'Tutti i prodotti' }}</RouterLink>
-        
-        <div class="mobile-divider"></div>
-        
-        <p class="mobile-section-title">{{ t('nav.browseCategories') || 'Sfoglia categorie' }}</p>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Stampe 3D</RouterLink>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Taglio Laser</RouterLink>
-        <RouterLink to="/" class="mobile-link" @click="showMobileMenu = false">Gadget</RouterLink>
-      </nav>
     </div>
+
+    <!-- On <body>: the masthead's backdrop-filter would make it the fixed panel's containing block -->
+    <Teleport to="body">
+    <Transition name="menu">
+      <div v-if="menuOpen" id="mobile-menu" class="mobile-menu">
+        <nav :aria-label="t('nav.mainNav')">
+          <RouterLink v-for="link in links" :key="link.key" :to="link.to" class="mobile-link" @click="menuOpen = false">
+            {{ t(link.key) }}
+          </RouterLink>
+        </nav>
+        <div class="mobile-tools">
+          <div class="lang" role="group" :aria-label="t('nav.language')">
+            <button
+              v-for="loc in SUPPORTED_LOCALES"
+              :key="loc"
+              class="lang-btn"
+              :class="{ 'is-on': locale === loc }"
+              :aria-pressed="locale === loc"
+              @click="setLocale(loc)"
+            >
+              {{ LOCALE_NAMES[loc] }}
+            </button>
+          </div>
+          <button class="theme-line" @click="toggleTheme">
+            {{ isDark ? t('nav.themeToLight') : t('nav.themeToDark') }}
+          </button>
+        </div>
+      </div>
+    </Transition>
+    </Teleport>
   </header>
 </template>
 
 <style scoped>
-.navbar-wrapper {
+.masthead {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
+  inset: 0 0 auto 0;
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-brand-dark, #1a1a1a);
-  color: var(--color-on-dark, #ffffff);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: var(--transition, all 0.3s ease);
+  background: var(--masthead-bg);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
 }
 
-.navbar-main {
-  height: var(--navbar-height, 72px);
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.masthead.is-scrolled {
+  border-bottom-color: var(--rule);
 }
 
-.navbar-container {
-  width: 100%;
-  max-width: 1400px;
+.masthead-row {
+  height: var(--navbar-height);
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--gutter);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 2rem;
 }
 
-/* Brand */
-.navbar-brand {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.brand-roundel {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.brand-word {
+  font-stretch: var(--wide);
+  font-weight: 850;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.links {
+  display: flex;
+  gap: 1.75rem;
+  margin-left: auto;
+}
+
+.link {
+  position: relative;
+  font-weight: 600;
+  font-size: 0.98rem;
+  padding: 0.4rem 0;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--ease-out);
+}
+
+.link.is-current::after {
+  transform: scaleX(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.tools {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  text-decoration: none;
-  color: var(--color-on-dark, #ffffff);
+  margin-left: 1.5rem;
 }
 
-.brand-logo {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
-}
-
-.brand-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-/* Search */
-.navbar-search {
-  flex: 1;
-  max-width: 600px;
+.lang {
   display: flex;
-  align-items: center;
-  background: var(--color-surface, #ffffff);
-  border-radius: var(--radius-md, 6px);
-  overflow: hidden;
-  height: 44px;
-  border: 1px solid var(--color-border);
-}
-
-.search-input {
-  flex: 1;
-  height: 100%;
-  border: none;
-  padding: 0 1rem;
-  font-size: 1rem;
-  color: var(--color-text);
-  background: transparent;
-  outline: none;
-}
-
-.search-button {
-  background: var(--color-accent, #16a085);
-  color: white;
-  border: none;
-  height: 100%;
-  width: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.search-button:hover {
-  background-color: #12876f;
-}
-
-/* Actions */
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.action-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-on-dark, #ffffff);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-}
-
-.action-btn:hover {
-  opacity: 0.8;
-}
-
-.text-btn {
-  gap: 0.5rem;
-  font-weight: 500;
-  font-size: 0.95rem;
-  padding: 0.5rem;
-}
-
-.text-btn svg {
-  transition: transform 0.2s ease;
-}
-
-.text-btn svg.rotated {
-  transform: rotate(180deg);
-}
-
-.cart-btn {
-  position: relative;
-  padding: 0.25rem;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -5px;
-  right: -8px;
-  background-color: var(--color-accent, #16a085);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full, 9999px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  border: 2px solid var(--color-brand-dark, #1a1a1a);
-}
-
-/* Lang Switcher */
-.lang-switcher {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.25rem;
-  border-radius: var(--radius-sm, 4px);
+  border: 2px solid var(--ink);
 }
 
 .lang-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
+  min-width: 40px;
+  min-height: 36px;
+  padding: 0 0.55rem;
+  font-weight: 700;
   font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2px;
-  transition: all 0.2s;
+  letter-spacing: 0.04em;
+  transition: var(--transition-fast);
 }
 
-.lang-btn:hover {
-  color: white;
+.lang-btn.is-on {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.lang-btn.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  transition: transform 160ms var(--ease-out);
 }
 
-/* Dropdown */
-.dropdown-wrapper {
-  position: relative;
+.icon-btn:active {
+  transform: scale(0.94);
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 1rem);
-  right: 0;
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-md, 6px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  padding: 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown-item {
-  padding: 0.75rem 1rem;
-  color: var(--color-text);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: background-color 0.2s;
-}
-
-.dropdown-item:hover {
-  background-color: var(--color-accent-light);
-  color: var(--color-accent, #16a085);
-}
-
-/* Secondary Nav */
-.navbar-secondary {
-  background-color: rgba(0, 0, 0, 0.2); /* Darker shade */
-  height: 36px;
+.cart {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  padding-left: 0.25rem;
 }
 
-.secondary-container {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
+.cart:active .cart-square {
+  transform: scale(0.94);
 }
 
-.secondary-link {
-  color: var(--color-on-dark, #ffffff);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  opacity: 0.9;
-  transition: opacity 0.2s;
-  padding: 0.25rem 0;
+.cart-square {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 0.6rem;
+  display: grid;
+  place-items: center;
+  background: var(--blue);
+  color: var(--on-blue);
+  font-weight: 800;
+  font-stretch: var(--wide);
+  font-size: 1.05rem;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    transform 160ms var(--ease-out);
 }
 
-.secondary-link:hover {
-  opacity: 1;
-  text-decoration: underline;
+.cart-square.bump {
+  animation: bump 420ms var(--ease-out);
 }
 
-/* Mobile Drawer */
-.mobile-drawer {
+@keyframes bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.flood-light,
+.flood-dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.mobile {
   display: none;
-  background-color: var(--color-brand-dark, #1a1a1a);
-  padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.mobile-drawer.is-open {
-  display: block;
-}
-
-.mobile-search {
-  display: flex;
-  align-items: center;
-  background: var(--color-surface, #ffffff);
-  border-radius: var(--radius-md, 6px);
-  overflow: hidden;
-  height: 40px;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--color-border);
-}
-
-.mobile-nav-links {
+/* Mobile menu */
+.mobile-menu {
+  position: fixed;
+  z-index: 999;
+  top: var(--navbar-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--paper);
+  padding: 1.5rem var(--gutter) 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.mobile-menu nav {
+  display: flex;
+  flex-direction: column;
 }
 
 .mobile-link {
-  color: var(--color-on-dark, #ffffff);
-  text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-stretch: var(--wide);
+  font-weight: 800;
+  font-size: clamp(2.25rem, 11vw, 3.25rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  padding: 0.6rem 0;
+  border-bottom: 2px solid var(--rule);
 }
 
-.mobile-divider {
-  height: 1px;
-  background-color: rgba(255, 255, 255, 0.1);
-  margin: 0.5rem 0;
-}
-
-.mobile-section-title {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
-}
-
-/* Utilities */
-.desktop-only {
+.mobile-tools {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 2rem;
 }
 
-.mobile-only {
-  display: none;
+.mobile-tools .lang {
+  align-self: flex-start;
 }
 
-@media (max-width: 1024px) {
-  .desktop-only {
+.mobile-tools .lang-btn {
+  min-height: 44px;
+  padding: 0 1rem;
+  font-size: 0.95rem;
+}
+
+.theme-line {
+  align-self: flex-start;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  min-height: 44px;
+}
+
+.menu-enter-active {
+  transition:
+    opacity 0.22s var(--ease-out),
+    transform 0.22s var(--ease-out);
+}
+
+.menu-leave-active {
+  transition: opacity 0.14s ease;
+}
+
+.menu-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.menu-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 860px) {
+  .desktop {
     display: none !important;
   }
-  
-  .mobile-only {
-    display: flex;
+
+  .mobile {
+    display: grid;
   }
 
-  .navbar-container {
-    gap: 1rem;
+  .tools {
+    margin-left: auto;
+    gap: 0.4rem;
+  }
+
+  .cart-word {
+    display: none;
   }
 }
 
-@media (max-width: 768px) {
-  .navbar-actions {
-    gap: 0.5rem;
-  }
-  
-  .brand-text {
-    display: none;
-  }
-  
-  .navbar-container {
-    padding: 0 1rem;
+@media (max-width: 400px) {
+  .brand-word {
+    font-size: 1.15rem;
   }
 }
 </style>

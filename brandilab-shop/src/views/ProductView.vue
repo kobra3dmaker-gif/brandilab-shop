@@ -1,30 +1,42 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProducts } from '@/composables/useProducts'
-import { urlFor } from '@/sanity'
-import { trackEvent } from '@/analytics'
 import { useCart } from '@/composables/useCart'
+import { useCatalog, flyToCart, imageSrc, imageSrcset } from '@/composables/useCatalog'
+import { trackEvent } from '@/analytics'
 import ProductGrid from '@/components/ProductGrid.vue'
+import { parseDescription } from '@/utils/description'
 
 const route = useRoute()
 const { t, n } = useI18n()
-const { getProductById, products } = useProducts()
+const { getProductById, products, loading } = useProducts()
 const { addItem } = useCart()
+const { fieldOf } = useCatalog()
 
 const productId = computed(() => route.params.id as string)
 const product = computed(() => getProductById(productId.value))
+const field = computed(() => (product.value ? fieldOf(product.value) : 'light'))
 
 const quantity = ref(1)
+const isAdded = ref(false)
+const plate = ref<HTMLImageElement | null>(null)
+const buyButton = ref<HTMLButtonElement | null>(null)
+const showBar = ref(false)
+let addedTimer: ReturnType<typeof setTimeout> | undefined
+let observer: IntersectionObserver | null = null
+
 watch(productId, () => {
   quantity.value = 1
+  isAdded.value = false
 })
 
 watch(
   product,
   (p) => {
     if (!p) return
+    document.title = `${p.title} — BrandiLab`
     trackEvent('view_item', {
       currency: 'EUR',
       value: p.price,
@@ -34,431 +46,626 @@ watch(
   { immediate: true },
 )
 
-const decreaseQuantity = () => {
-  if (quantity.value > 1) quantity.value--
-}
+const description = computed(() => parseDescription(product.value?.description))
 
-const increaseQuantity = () => {
-  quantity.value++
-}
+const total = computed(() => (product.value ? product.value.price * quantity.value : 0))
 
-const isAdded = ref(false)
-const handleAddToCart = () => {
+const moreProducts = computed(() => products.value.filter((p) => p._id !== productId.value).slice(0, 4))
+
+function add() {
   if (!product.value) return
   addItem(product.value, quantity.value)
+  flyToCart(plate.value, field.value)
   isAdded.value = true
-  setTimeout(() => {
-    isAdded.value = false
-  }, 1500)
+  clearTimeout(addedTimer)
+  addedTimer = setTimeout(() => (isAdded.value = false), 1600)
 }
 
-const totalPrice = computed(() => (product.value ? product.value.price * quantity.value : 0))
+function observeBuyButton() {
+  observer?.disconnect()
+  if (!buyButton.value || typeof IntersectionObserver === 'undefined') return
+  observer = new IntersectionObserver(([entry]) => {
+    showBar.value = !!entry && !entry.isIntersecting && entry.boundingClientRect.top < 0
+  })
+  observer.observe(buyButton.value)
+}
 
-const recommendedProducts = computed(() => {
-  return products.value.filter(p => p._id !== productId.value).slice(0, 4)
+watch(product, async (p) => {
+  if (!p) return
+  await nextTick()
+  observeBuyButton()
+})
+
+onMounted(() => {
+  if (product.value) observeBuyButton()
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+  clearTimeout(addedTimer)
 })
 </script>
 
 <template>
-  <main class="product-view">
-    <div class="container" v-if="product">
-      <nav class="breadcrumb">
-        <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
-        <span class="separator">›</span>
-        <span class="current">{{ product.title }}</span>
-      </nav>
-
-      <div class="product-layout-amazon">
-        <!-- Image Column -->
-        <div class="product-image-col">
-          <div class="main-image-wrapper">
-            <img :src="urlFor(product.image).width(600).url()" :alt="product.title" class="product-image" />
-          </div>
-        </div>
-
-        <!-- Info Column -->
-        <div class="product-info-col">
-          <h1 class="product-name">{{ product.title }}</h1>
-          <div class="brand-link">BrandiLab Store</div>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-count">4.9 / 5</span>
-          </div>
-          <hr class="divider" />
-          
-          <div class="price-section">
-            <span class="price-symbol">€</span>
-            <span class="price-whole">{{ Math.floor(product.price) }}</span>
-            <span class="price-fraction">{{ (product.price % 1).toFixed(2).substring(2) }}</span>
-          </div>
-
-          <div class="product-material" v-if="product.material">
-            <strong>Materiale:</strong> {{ product.material }}
-          </div>
-          
-          <div class="product-category" v-if="product.category">
-            <strong>Categoria:</strong> {{ product.category }}
-          </div>
-
-          <div class="product-color" v-if="product.color">
-            <strong>Colore:</strong> {{ product.color }}
-          </div>
-          
-          <hr class="divider" />
-          
-          <h3>Informazioni su questo articolo</h3>
-          <p class="product-description">{{ product.description }}</p>
-        </div>
-
-        <!-- Buy Box Column -->
-        <div class="product-buy-box">
-          <div class="buy-box-price">{{ n(product.price, 'currency') }}</div>
-          <div class="delivery-info">
-            Spedizione <strong>GRATUITA</strong> disponibile per ordini idonei.
-          </div>
-          <div class="stock-status">Disponibilità immediata.</div>
-          
-          <div class="quantity-wrapper">
-            <label for="quantity">Quantità: </label>
-            <div class="quantity-selector">
-              <button class="qty-btn" @click="decreaseQuantity" :aria-label="t('product.decrease')">-</button>
-              <span class="qty-display">{{ quantity }}</span>
-              <button class="qty-btn" @click="increaseQuantity" :aria-label="t('product.increase')">+</button>
-            </div>
-          </div>
-          
-          <button 
-            class="btn btn-add"
-            :class="{ 'is-added': isAdded }"
-            @click="handleAddToCart"
-            :disabled="isAdded"
-          >
-            {{ isAdded ? 'Aggiunto!' : 'Aggiungi al carrello' }}
-          </button>
-          
-          <div class="secure-transaction">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lock-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            Transazione sicura
-          </div>
-          
-          <div class="seller-info">
-            <div class="seller-row">
-              <span class="seller-label">Spedito da</span>
-              <span class="seller-value">BrandiLab</span>
-            </div>
-            <div class="seller-row">
-              <span class="seller-label">Venduto da</span>
-              <span class="seller-value">BrandiLab</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <section class="recommended-section" v-if="recommendedProducts.length > 0">
-        <h2 class="section-title">{{ t('product.youMayAlsoLike') }}</h2>
-        <ProductGrid :products="recommendedProducts" :horizontal-on-mobile="true" />
-      </section>
+  <main class="product-page">
+    <div v-if="loading && !product" class="spread" aria-busy="true">
+      <div class="plate-field f-light"><div class="plate-skeleton" /></div>
+      <div class="sheet"><div class="line-skeleton" /></div>
     </div>
-    
-    <div class="container not-found" v-else>
-      <h2>{{ t('product.notFound') }}</h2>
-      <RouterLink to="/" class="btn btn-primary">{{ t('product.backToShop') }}</RouterLink>
+
+    <template v-else-if="product">
+      <article :key="productId" class="spread">
+        <div class="plate-field" :class="`f-${field}`">
+          <img
+            ref="plate"
+            class="plate"
+            :src="imageSrc(product, 1200)"
+            :srcset="imageSrcset(product, [600, 900, 1200, 1600, 2000])"
+            sizes="(min-width: 960px) 56vw, 100vw"
+            :alt="product.title"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+
+        <div class="sheet">
+          <nav class="crumbs" aria-label="Breadcrumb">
+            <RouterLink :to="{ path: '/', hash: '#catalogo' }">{{ t('nav.catalogue') }}</RouterLink>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ product.title }}</span>
+          </nav>
+
+          <h1 class="name display">{{ product.title }}</h1>
+          <p class="price tabular">{{ n(product.price, 'currency') }}</p>
+          <p v-if="product.featured" class="pick">{{ t('product.featured') }}</p>
+
+          <div class="buy">
+            <div class="qty" role="group" :aria-label="t('product.quantity')">
+              <button :aria-label="t('product.decrease')" :disabled="quantity <= 1" @click="quantity > 1 && quantity--">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M5 12h14" /></svg>
+              </button>
+              <output class="tabular" aria-live="polite">{{ quantity }}</output>
+              <button :aria-label="t('product.increase')" :disabled="quantity >= 20" @click="quantity < 20 && quantity++">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
+
+            <button ref="buyButton" class="add" :class="{ 'is-added': isAdded }" :aria-label="isAdded ? undefined : t('product.addToCart')" @click="add">
+              <span class="add-label" :key="String(isAdded)">
+                <svg v-if="isAdded" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11" /></svg>
+                <template v-if="isAdded">{{ t('product.added') }}</template>
+                <template v-else>
+                  <span class="label-long">{{ t('product.addToCart') }}</span>
+                  <span class="label-short" aria-hidden="true">{{ t('product.add') }}</span>
+                </template>
+              </span>
+            </button>
+          </div>
+          <p v-if="quantity > 1" class="total tabular">{{ t('product.total') }}: {{ n(total, 'currency') }}</p>
+
+          <section class="specs" :aria-label="t('product.specsTitle')">
+            <h2 class="specs-title">{{ t('product.specsTitle') }}</h2>
+            <dl>
+              <div>
+                <dt>{{ t('product.made') }}</dt>
+                <dd>{{ t('product.madeValue') }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('product.delivery') }}</dt>
+                <dd>{{ t('product.deliveryValue') }}</dd>
+              </div>
+              <div v-if="product.material">
+                <dt>{{ t('product.material') }}</dt>
+                <dd>{{ product.material }}</dd>
+              </div>
+              <div v-if="product.color">
+                <dt>{{ t('product.color') }}</dt>
+                <dd>{{ product.color }}</dd>
+              </div>
+              <div v-if="product.category">
+                <dt>{{ t('product.category') }}</dt>
+                <dd>{{ product.category }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('product.payment') }}</dt>
+                <dd>{{ t('product.paymentValue') }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <p class="custom">
+            {{ t('product.customNote') }}
+            <RouterLink :to="{ path: '/contact', query: { type: 'custom', product: product.title } }">{{ t('product.customLink') }}</RouterLink>
+          </p>
+
+          <div v-if="description.length" class="description">
+            <template v-for="(block, i) in description" :key="i">
+              <p v-if="block.type === 'lead'" class="lead">{{ block.text }}</p>
+              <p v-else-if="block.type === 'p'">{{ block.text }}</p>
+              <h3 v-else-if="block.type === 'heading'">{{ block.text }}</h3>
+              <hr v-else-if="block.type === 'rule'" />
+              <ul v-else-if="block.type === 'list'">
+                <li v-for="(item, j) in block.items" :key="j">
+                  <strong v-if="item.label">{{ item.label }}:</strong>
+                  {{ item.text }}
+                </li>
+              </ul>
+            </template>
+          </div>
+        </div>
+      </article>
+
+      <section v-if="moreProducts.length" class="more" aria-labelledby="more-title">
+        <h2 id="more-title" class="more-title display container">{{ t('product.youMayAlsoLike') }}</h2>
+        <div class="more-sheet" :key="productId">
+          <ProductGrid :products="moreProducts" variant="strip" />
+        </div>
+      </section>
+
+      <Transition name="bar">
+        <div v-if="showBar" class="buy-bar">
+          <div class="bar-text">
+            <span class="bar-name">{{ product.title }}</span>
+            <span class="bar-price tabular">{{ n(total, 'currency') }}</span>
+          </div>
+          <button class="add" :class="{ 'is-added': isAdded }" @click="add">
+            {{ isAdded ? t('product.added') : t('product.add') }}
+          </button>
+        </div>
+      </Transition>
+    </template>
+
+    <div v-else class="missing container">
+      <h1 class="display">{{ t('product.notFound') }}</h1>
+      <p>{{ t('product.notFoundText') }}</p>
+      <RouterLink :to="{ path: '/', hash: '#catalogo' }" class="btn btn-ink">{{ t('product.backToShop') }}</RouterLink>
     </div>
   </main>
 </template>
 
 <style scoped>
-.product-view {
-  padding: 2rem 1rem 5rem;
-  background-color: var(--color-bg);
-  min-height: calc(100vh - var(--navbar-height));
+.product-page {
+  --f-bg: var(--tile-light);
+  --f-ink: var(--on-tile-light);
 }
 
-.container {
-  max-width: 1300px;
+.f-light {
+  --f-bg: var(--tile-light);
+  --f-ink: var(--on-tile-light);
+}
+
+.f-dark {
+  --f-bg: var(--tile-dark);
+  --f-ink: var(--on-tile-dark);
+}
+
+.spread {
+  max-width: var(--container-max);
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
-.breadcrumb {
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-  color: var(--color-text-light);
+.plate-field {
+  background: var(--f-bg);
+  padding: clamp(1rem, 3vw, 2.5rem);
 }
 
-.breadcrumb a {
-  color: var(--color-text-light);
-  text-decoration: none;
+.plate {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--f-ink) 12%, var(--f-bg));
 }
 
-.breadcrumb a:hover {
-  text-decoration: underline;
+.plate-field {
+  overflow: clip;
 }
 
-.separator {
-  margin: 0 0.5rem;
+.plate-field .plate {
+  animation: settle 1.4s var(--ease-apple) both;
 }
 
-.current {
-  color: var(--color-text);
+.sheet > * {
+  animation: rise 0.9s var(--ease-apple) both;
 }
 
-.product-layout-amazon {
+.sheet > :nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.sheet > :nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.sheet > :nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.sheet > :nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.sheet > :nth-child(n + 6) {
+  animation-delay: 300ms;
+}
+
+.plate-skeleton {
+  aspect-ratio: 4 / 5;
+  background: rgba(134, 134, 139, 0.18);
+}
+
+.line-skeleton {
+  height: 3rem;
+  width: 70%;
+  background: var(--paper-2);
+}
+
+.sheet {
+  padding: clamp(1.25rem, 3vw, 2.5rem) var(--gutter) 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  margin-bottom: 4rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
-@media (min-width: 1024px) {
-  .product-layout-amazon {
-    flex-direction: row;
-    align-items: flex-start;
+@media (min-width: 960px) {
+  .spread {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
   }
 
-  .product-image-col {
-    flex: 0 0 40%;
+  .plate-field {
     position: sticky;
-    top: calc(var(--navbar-total-height) + 1rem);
+    top: var(--navbar-height);
   }
 
-  .product-info-col {
-    flex: 1;
-    min-width: 0;
+  .plate {
+    max-height: calc(100svh - var(--navbar-height) - 5rem);
   }
 
-  .product-buy-box {
-    flex: 0 0 280px;
-    position: sticky;
-    top: calc(var(--navbar-total-height) + 1rem);
+  .sheet {
+    padding-left: clamp(1.5rem, 3.5vw, 3.5rem);
+    padding-top: 2.5rem;
   }
 }
 
-.main-image-wrapper {
-  background: var(--color-surface);
-  padding: 2rem;
-  text-align: center;
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--ink-2);
 }
 
-.product-image {
-  max-width: 100%;
-  max-height: 500px;
-  object-fit: contain;
+.crumbs a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.crumbs [aria-current] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 28ch;
+}
+
+.pick {
+  align-self: flex-start;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.name {
+  font-size: clamp(2.25rem, 4.6vw, 4.5rem);
+  overflow-wrap: anywhere;
+}
+
+.price {
+  font-stretch: var(--wide);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 3vw, 2.6rem);
+  letter-spacing: -0.03em;
+}
+
+.buy {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.qty {
+  display: flex;
+  align-items: stretch;
+  border: 2px solid var(--ink);
+  flex-shrink: 0;
+}
+
+.qty button {
+  width: 48px;
+  display: grid;
+  place-items: center;
+  transition: background-color 0.15s ease;
+}
+
+.qty button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .qty button:hover:not(:disabled) {
+    background: var(--paper-2);
+  }
+}
+
+.qty output {
+  min-width: 2.5rem;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.add {
+  flex: 1;
+  min-height: 56px;
+  padding: 0 1.5rem;
+  background: var(--blue);
+  color: var(--on-blue);
+  font-weight: 800;
+  font-stretch: var(--semi-wide);
+  font-size: 1.08rem;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .add:hover:not(.is-added) {
+    background: var(--blue-hover);
+  }
+}
+
+.add:active {
+  transform: scale(0.97);
+}
+
+.label-short {
+  display: none;
+}
+
+@media (max-width: 479px) {
+  .label-long {
+    display: none;
+  }
+
+  .label-short {
+    display: inline;
+  }
+}
+
+.add.is-added {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.add-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: label-in 220ms var(--ease-out);
+}
+
+@keyframes label-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(3px);
+  }
+}
+
+.total {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 62ch;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--rule);
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+.description .lead {
+  font-stretch: var(--semi-wide);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.description h3 {
+  margin-top: 0.75rem;
+  font-stretch: var(--semi-wide);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.description hr {
+  border: none;
+  border-top: 1px solid var(--rule-soft);
+  margin: 0.5rem 0;
+}
+
+.description ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-left: 1.1rem;
+  list-style: square;
+}
+
+.description li::marker {
+  color: var(--blue);
+}
+
+.description strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.specs {
+  margin-top: 1rem;
+}
+
+.specs-title {
+  font-stretch: var(--semi-wide);
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--rule);
+}
+
+.specs dl > div {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 0.6fr) 1fr;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.specs dt {
+  font-weight: 700;
+}
+
+.specs dd {
+  color: var(--ink-2);
+}
+
+.custom {
+  font-size: 0.95rem;
+  color: var(--ink-2);
+}
+
+.custom a {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* More from the catalogue */
+.more {
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+
+.more-title {
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-top: 2px solid var(--rule);
+}
+
+.more-sheet {
+  max-width: var(--container-max);
   margin: 0 auto;
 }
 
-.product-name {
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--color-primary);
-  margin-bottom: 0.25rem;
-}
-
-.brand-link {
-  color: var(--color-accent);
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-}
-
-.brand-link:hover {
-  text-decoration: underline;
-}
-
-.product-rating {
-  font-size: 0.9rem;
-  color: var(--color-text-light);
-  margin-bottom: 0.75rem;
+/* Mobile buy bar */
+.buy-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 950;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  padding: 0.6rem var(--gutter) calc(0.6rem + env(safe-area-inset-bottom));
+  background: var(--paper);
+  border-top: 2px solid var(--rule);
 }
 
-.divider {
-  border: none;
-  border-top: 1px solid var(--color-border);
-  margin: 1rem 0;
-}
-
-.price-section {
+.bar-text {
+  flex: 1;
+  min-width: 0;
   display: flex;
+  flex-direction: column;
+}
+
+.bar-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-price {
+  font-weight: 800;
+  font-stretch: var(--wide);
+}
+
+.buy-bar .add {
+  flex: 0 0 auto;
+  min-height: 48px;
+}
+
+.bar-enter-active {
+  transition: transform 0.26s var(--ease-drawer);
+}
+
+.bar-leave-active {
+  transition: transform 0.16s ease;
+}
+
+.bar-enter-from,
+.bar-leave-to {
+  transform: translateY(100%);
+}
+
+@media (min-width: 960px) {
+  .buy-bar {
+    display: none;
+  }
+}
+
+.missing {
+  padding-top: 4rem;
+  padding-bottom: 6rem;
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  color: var(--color-danger);
-  margin-bottom: 1rem;
+  gap: 1.25rem;
 }
 
-.price-symbol {
-  font-size: 1rem;
-  margin-top: 0.2rem;
+.missing h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  max-width: 18ch;
 }
 
-.price-whole {
-  font-size: 2rem;
-  font-weight: 500;
-  line-height: 1;
+.missing p {
+  color: var(--ink-2);
 }
 
-.price-fraction {
-  font-size: 1rem;
-  margin-top: 0.2rem;
-}
-
-.product-material, .product-category, .product-color {
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-text);
-}
-
-.product-description {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--color-text);
-  white-space: pre-wrap;
-}
-
-.product-info-col h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-primary);
-}
-
-.product-buy-box {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-  background: var(--color-surface);
-}
-
-.buy-box-price {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--color-primary);
-  margin-bottom: 0.5rem;
-}
-
-.delivery-info {
-  font-size: 0.85rem;
-  color: var(--color-text);
-  margin-bottom: 1rem;
-  line-height: 1.4;
-}
-
-.stock-status {
-  color: var(--color-success);
-  font-size: 1.1rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.quantity-wrapper {
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-}
-
-.quantity-selector {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  margin-left: 0.5rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.qty-btn {
-  background: var(--color-bg);
-  border: none;
-  font-size: 1.1rem;
-  padding: 0.2rem 0.6rem;
-  cursor: pointer;
-  color: var(--color-text);
-}
-
-.qty-btn:hover {
-  background: var(--color-border);
-}
-
-.qty-display {
-  padding: 0 1rem;
-  font-weight: 500;
-}
-
-.btn-add {
-  background-color: #ffd814;
-  color: #0f1111;
-  border: 1px solid #fcd200;
-  border-radius: 100px;
-  width: 100%;
-  padding: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 400;
-  box-shadow: 0 2px 5px rgba(213,217,217,.5);
-}
-
-.btn-add:hover:not(:disabled) {
-  background-color: #f7ca00;
-  border-color: #f2c200;
-  transform: none;
-}
-
-.btn-add.is-added {
-  background-color: var(--color-success, #2ecc71);
-  color: white;
-  border-color: var(--color-success, #2ecc71);
-  cursor: default;
-}
-
-/* Dark mode adjustment for buy button */
-:root[data-theme='dark'] .btn-add:not(.is-added) {
-  background-color: var(--color-accent);
-  color: white;
-  border-color: var(--color-accent);
-}
-:root[data-theme='dark'] .btn-add:not(.is-added):hover:not(:disabled) {
-  background-color: var(--color-accent-hover);
-}
-
-.secure-transaction {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-light);
-  font-size: 0.85rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-.seller-info {
-  font-size: 0.85rem;
-}
-
-.seller-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-}
-
-.seller-label {
-  color: var(--color-text-light);
-}
-
-.seller-value {
-  color: var(--color-text);
-  font-weight: 500;
-}
-
-.recommended-section {
-  padding-top: 2rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.section-title {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  color: var(--color-primary);
-}
-
-.not-found {
-  text-align: center;
-  padding: 5rem 0;
+@media (prefers-reduced-motion: reduce) {
+  .add-label {
+    animation: none;
+  }
 }
 </style>

@@ -9,13 +9,13 @@ import CartDrawer from '@/components/CartDrawer.vue'
   <div class="app-layout">
     <TheNavbar />
     <CartDrawer />
-    <main class="main-content">
+    <div class="main-content">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
           <component :is="Component" />
         </Transition>
       </RouterView>
-    </main>
+    </div>
     <TheFooter />
     <CookieBanner />
   </div>
@@ -30,13 +30,6 @@ import CartDrawer from '@/components/CartDrawer.vue'
 
 .main-content {
   flex: 1;
-  padding-top: var(--navbar-total-height);
-}
-
-/* On tablet/mobile the secondary nav strip is hidden */
-@media (max-width: 1024px) {
-  .main-content {
-    padding-top: var(--navbar-height);
-  }
+  padding-top: var(--navbar-height);
 }
 </style>

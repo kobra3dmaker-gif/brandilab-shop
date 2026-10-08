@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { validateToken, getSession, notifyPayment, toCents } from './_snipcart.js';
+import { handleContact } from './contact.js';
 
 const getAllowedOrigin = (request) => {
   const origin = request.headers.get('Origin');
@@ -130,6 +131,11 @@ export default {
           return json({ error: 'finalize_failed' }, 500, request);
         }
       }
+      if (path === '/api/contact' && request.method === 'POST') {
+        const { status, body } = await handleContact(request, env);
+        return json(body, status, request);
+      }
+
       // ── Stripe Checkout Session (replaces Snipcart) ──
       if (path === '/api/create-checkout-session' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));

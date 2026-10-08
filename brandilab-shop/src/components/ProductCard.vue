@@ -1,311 +1,333 @@
 <script setup lang="ts">
-import type { Product } from '@/types'
+import { ref, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { urlFor } from '@/sanity'
+import type { Product } from '@/types'
 import { useCart } from '@/composables/useCart'
-import { computed, ref } from 'vue'
+import { flyToCart, imageSrc, imageSrcset, type Field } from '@/composables/useCatalog'
 
-const props = defineProps<{
-  product: Product
-}>()
+const props = withDefaults(
+  defineProps<{
+    product: Product
+    field: Field
+    feature?: boolean
+  }>(),
+  { feature: false },
+)
 
 const { t, n } = useI18n()
 const { addItem } = useCart()
 
+const plate = ref<HTMLImageElement | null>(null)
 const isAdded = ref(false)
+let addedTimer: ReturnType<typeof setTimeout> | undefined
 
-const handleAddToCart = () => {
+const productLink = `/product/${props.product._id}`
+const widths = props.feature ? [600, 900, 1200, 1600] : [400, 600, 800]
+const sizes = props.feature
+  ? '(min-width: 1100px) 50vw, 100vw'
+  : '(min-width: 1100px) 25vw, (min-width: 700px) 33vw, 50vw'
+
+function add() {
   addItem(props.product)
+  flyToCart(plate.value, props.field)
   isAdded.value = true
-  setTimeout(() => {
-    isAdded.value = false
-  }, 1500)
+  clearTimeout(addedTimer)
+  addedTimer = setTimeout(() => (isAdded.value = false), 1600)
 }
 
-// Deterministic hash function for pseudo-random effects
-const hashStr = (str: string) => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return Math.abs(hash)
-}
-
-const rating = computed(() => {
-  const hash = hashStr(props.product._id || '')
-  return 4.0 + (hash % 11) / 10 // 4.0 to 5.0
-})
-
-const fullStars = computed(() => Math.round(rating.value))
-
-const reviewCount = computed(() => {
-  const hash = hashStr((props.product._id || '') + 'reviews')
-  return 30 + (hash % 31) // 30 to 60
-})
-
-const showNewBadge = computed(() => {
-  const hash = hashStr((props.product._id || '') + 'new')
-  return (hash % 100) < 40 // ~40% chance
-})
-
-const swatches = computed(() => {
-  const base = props.product.color?.toLowerCase()
-  const defaultColors = ['#1a1a1a', '#808080', '#e6e6e6']
-  if (base) {
-    return [base, ...defaultColors].slice(0, 3)
-  }
-  return defaultColors
-})
+onUnmounted(() => clearTimeout(addedTimer))
 </script>
 
 <template>
-  <div class="product-card">
-    <router-link :to="`/product/${product._id}`" class="image-link">
-      <div class="image-container">
-        <img 
-          v-if="product.image"
-          :src="urlFor(product.image).width(400).url()" 
-          :alt="product.title"
-          class="product-image"
-          loading="lazy"
-        />
-      </div>
-    </router-link>
-
-    <div class="card-content">
-      <div class="rating-container">
-        <div class="stars">
-          <span 
-            v-for="i in 5" 
-            :key="i"
-            class="star"
-            :class="{ filled: i <= fullStars }"
-          >
-            {{ i <= fullStars ? '★' : '☆' }}
-          </span>
-        </div>
-        <span class="review-count">({{ reviewCount }})</span>
-      </div>
-
-      <router-link :to="`/product/${product._id}`" class="title-link">
-        <h3 class="product-title" :title="product.title">{{ product.title }}</h3>
-      </router-link>
-
-      <div class="price">
-        {{ n(product.price, 'currency') }}
-      </div>
-
-      <div class="badges">
-        <span v-if="product.featured" class="badge bestseller">
-          {{ t('product.bestseller') }}
-        </span>
-        <span v-else-if="showNewBadge" class="badge new-item">
-          {{ t('product.new') }}
-        </span>
-      </div>
-
-      <div class="swatches">
-        <div 
-          v-for="(color, index) in swatches" 
-          :key="index"
-          class="swatch"
-          :style="{ backgroundColor: color }"
-        ></div>
-      </div>
-
-      <button
-        class="add-to-cart-btn"
-        :class="{ 'is-added': isAdded }"
-        @click="handleAddToCart"
-        :disabled="isAdded"
-      >
-        <span class="btn-text">
-          {{ isAdded ? 'Aggiunto!' : t('product.addToCart') }}
-        </span>
-        <svg v-if="!isAdded" xmlns="http://www.w3.org/2000/svg" class="cart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="21" r="1"/>
-          <circle cx="20" cy="21" r="1"/>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-        </svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" class="cart-icon check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </button>
+  <article class="field" :class="[`f-${field}`, { feature }]">
+    <div class="sheet">
+      <RouterLink :to="productLink" class="name-link">
+        <h3 class="name">{{ product.title }}</h3>
+      </RouterLink>
+      <p v-if="feature && product.featured" class="pick">{{ t('product.featured') }}</p>
+      <p class="price tabular">{{ n(product.price, 'currency') }}</p>
     </div>
-  </div>
+
+    <RouterLink :to="productLink" class="plate-link" tabindex="-1" aria-hidden="true">
+      <img
+        v-if="product.image"
+        ref="plate"
+        class="plate"
+        :src="imageSrc(product, feature ? 1200 : 600)"
+        :srcset="imageSrcset(product, widths)"
+        :sizes="sizes"
+        :alt="product.title"
+        :loading="feature ? 'eager' : 'lazy'"
+        :fetchpriority="feature ? 'high' : 'auto'"
+        decoding="async"
+      />
+    </RouterLink>
+
+    <button
+      class="add"
+      :class="{ 'is-added': isAdded }"
+      :aria-label="t('product.addNamed', { name: product.title })"
+      @click="add"
+    >
+      <span class="add-label" :key="String(isAdded)">
+        <svg v-if="!isAdded" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true">
+          <path d="M4.5 12.5l5 5 10-11" />
+        </svg>
+        {{ isAdded ? t('product.added') : feature ? t('product.addToCart') : t('product.add') }}
+      </span>
+    </button>
+  </article>
 </template>
 
 <style scoped>
-.product-card {
-  background-color: var(--color-surface, #ffffff);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+.field {
+  --f-bg: var(--tile-light);
+  --f-ink: var(--on-tile-light);
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: clamp(0.75rem, 1.4vw, 1.1rem);
+  padding: clamp(0.85rem, 1.8vw, 1.5rem);
+  background: var(--f-bg);
+  color: var(--f-ink);
+  min-width: 0;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0,0,0,0.1));
+.f-dark {
+  --f-bg: var(--tile-dark);
+  --f-ink: var(--on-tile-dark);
 }
 
-.image-link {
-  display: block;
+.sheet {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 0.25rem 1rem;
 }
 
-.image-container {
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background-color: #f8f8f8;
+.name-link {
+  min-width: 0;
 }
 
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.05);
-}
-
-.card-content {
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 0.5rem;
-}
-
-.rating-container {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-}
-
-.stars {
-  display: inline-flex;
-}
-
-.star {
-  color: #ccc;
-  line-height: 1;
-}
-
-.star.filled {
-  color: #ffc107;
-}
-
-.review-count {
-  color: #666;
-  font-size: 0.8rem;
-}
-
-.title-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.product-title {
-  margin: 0;
-  font-weight: 500;
-  font-size: 0.9rem;
-  line-height: 1.3;
+.name {
+  font-stretch: var(--semi-wide);
+  font-weight: 750;
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .name-link:hover .name {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
 }
 
 .price {
-  font-size: 1.1rem;
+  font-stretch: var(--wide);
+  font-weight: 800;
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.pick {
+  grid-column: 1 / -1;
+  justify-self: start;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--color-accent, #008080);
-  margin-top: auto;
+  padding: 0.2rem 0.5rem;
+  background: var(--f-ink);
+  color: var(--f-bg);
 }
 
-.badges {
-  min-height: 1.25rem; /* Reserve space if empty */
-  display: flex;
-  align-items: center;
+.plate-link {
+  display: block;
+  overflow: clip;
+  flex: 1;
+  min-height: 0;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #fff;
+.plate {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--f-ink) 12%, var(--f-bg));
+  transition: transform 500ms var(--ease-out);
 }
 
-.bestseller {
-  background-color: #ffc107; /* golden/amber */
+/* Reveal: the photo uncovers bottom-up, like a print being laid down, and settles from a slight zoom */
+.reveal .plate-link {
+  clip-path: inset(100% 0 0 0);
 }
 
-.new-item {
-  background-color: var(--color-accent, #008080); /* teal */
+.reveal .plate {
+  scale: 1.14;
 }
 
-.swatches {
-  display: flex;
-  gap: 0.35rem;
-  margin: 0.25rem 0;
+.reveal.is-in .plate-link {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1.1s var(--ease-apple) calc(var(--reveal-delay, 0ms) + 120ms);
 }
 
-.swatch {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.15);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+.reveal.is-in .plate {
+  scale: 1;
+  transition:
+    scale 1.8s var(--ease-apple) calc(var(--reveal-delay, 0ms) + 120ms),
+    transform 500ms var(--ease-out);
 }
 
-.add-to-cart-btn {
+@media (hover: hover) and (pointer: fine) {
+  .plate-link:hover .plate {
+    transform: scale(1.035);
+  }
+}
+
+.add {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 46px;
+  padding: 0.6rem 0.9rem;
+  background: var(--blue);
+  color: var(--on-blue);
+  font-weight: 700;
+  font-stretch: var(--semi-wide);
+  font-size: 0.95rem;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .add:hover:not(.is-added) {
+    background: var(--blue-hover);
+  }
+}
+
+.add:active {
+  transform: scale(0.97);
+}
+
+.add.is-added {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.add-label {
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
-  width: 100%;
-  padding: 0.6rem;
-  background-color: var(--color-accent, #008080);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md, 8px);
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  margin-top: 0.5rem;
+  animation: label-in 220ms var(--ease-out);
 }
 
-.add-to-cart-btn:hover:not(:disabled) {
-  background-color: #006666;
+@keyframes label-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(3px);
+  }
 }
 
-.add-to-cart-btn.is-added {
-  background-color: var(--color-success, #2ecc71);
-  color: white;
-  cursor: default;
+/* Feature: the opening spread of the catalogue */
+.feature .sheet {
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
 }
 
-.check-icon {
-  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+.feature .name {
+  font-stretch: var(--wide);
+  font-weight: 850;
+  font-size: clamp(2rem, 3.7vw, 3.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+  overflow: visible;
+  max-width: 14ch;
 }
 
-@keyframes scaleIn {
-  0% { transform: scale(0); }
-  100% { transform: scale(1); }
+.feature .sheet {
+  padding-bottom: 0.15rem;
 }
 
-.cart-icon {
-  flex-shrink: 0;
+.feature .price {
+  font-size: clamp(1.4rem, 2.4vw, 2.2rem);
+}
+
+.feature .plate {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 320px;
+}
+
+@media (max-width: 699px) {
+  .field:not(.feature) .sheet {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The feature's action sits with its sheet, above the plate, so it lands in the first viewport */
+.feature .plate-link {
+  order: 1;
+}
+
+.feature .add {
+  align-self: flex-start;
+  min-height: 56px;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.05rem;
+}
+
+/* Feature photo drifts against the scroll (parallax); the extra scale keeps the frame covered */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .feature .plate {
+      scale: 1.14;
+      animation: drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
+    .feature.reveal .plate {
+      scale: 1.28;
+    }
+
+    .feature.reveal.is-in .plate {
+      scale: 1.14;
+    }
+  }
+}
+
+@keyframes drift {
+  from {
+    translate: 0 -6%;
+  }
+  to {
+    translate: 0 6%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add-label {
+    animation: none;
+  }
+
+  .plate {
+    transition: none;
+  }
 }
 </style>

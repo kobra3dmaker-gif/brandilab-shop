@@ -1,316 +1,209 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ContactForm from '@/components/ContactForm.vue'
 
 const { t } = useI18n()
 
-const form = ref({
-  name: '',
-  email: '',
-  subject: '',
-  message: ''
-})
+const EMAIL = 'brandilab3d@gmail.com'
 
-const isSubmitted = ref(false)
-const openFaqIndex = ref<number | null>(null)
+const openFaq = ref<string | null>(null)
 
 // Keys under contact.faqs in src/i18n/{it,en}.ts
 const faqs = ['materials', 'shipping', 'custom'] as const
 
-const submitForm = () => {
-  isSubmitted.value = true
-  form.value = { name: '', email: '', subject: '', message: '' }
-  
-  setTimeout(() => {
-    isSubmitted.value = false
-  }, 5000)
-}
-
-const toggleFaq = (index: number) => {
-  openFaqIndex.value = openFaqIndex.value === index ? null : index
+function toggleFaq(key: string) {
+  openFaq.value = openFaq.value === key ? null : key
 }
 </script>
 
 <template>
-  <main class="contact-view">
-    <div class="container">
-      <header class="page-header">
-        <h1 class="title">{{ t('contact.title') }}</h1>
-        <p class="subtitle">{{ t('contact.subtitle') }}</p>
-      </header>
+  <main class="contact">
+    <header class="head container">
+      <h1 class="title display">{{ t('contact.title') }}</h1>
+      <p class="subtitle">{{ t('contact.subtitle') }}</p>
+    </header>
 
-      <div class="contact-layout">
-        <div class="contact-form-container">
-          <div v-if="isSubmitted" class="success-message">
-            <h3>{{ t('contact.thanksTitle') }}</h3>
-            <p>{{ t('contact.thanksText') }}</p>
-          </div>
-          
-          <form v-else @submit.prevent="submitForm" class="contact-form">
-            <div class="form-group">
-              <label for="name">{{ t('contact.nameLabel') }}</label>
-              <input type="text" id="name" v-model="form.name" required :placeholder="t('contact.namePlaceholder')" />
-            </div>
-            
-            <div class="form-group">
-              <label for="email">{{ t('contact.emailLabel') }}</label>
-              <input type="email" id="email" v-model="form.email" required :placeholder="t('contact.emailPlaceholder')" />
-            </div>
-            
-            <div class="form-group">
-              <label for="subject">{{ t('contact.subjectLabel') }}</label>
-              <input type="text" id="subject" v-model="form.subject" required :placeholder="t('contact.subjectPlaceholder')" />
-            </div>
-            
-            <div class="form-group">
-              <label for="message">{{ t('contact.messageLabel') }}</label>
-              <textarea id="message" v-model="form.message" required rows="5" :placeholder="t('contact.messagePlaceholder')"></textarea>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">{{ t('contact.send') }}</button>
-          </form>
+    <div class="layout container">
+      <div class="form-col">
+        <ContactForm />
+      </div>
+
+      <dl class="info">
+        <div>
+          <dt>{{ t('contact.emailTitle') }}</dt>
+          <dd><a :href="`mailto:${EMAIL}`">{{ EMAIL }}</a></dd>
         </div>
+        <div>
+          <dt>{{ t('contact.locationTitle') }}</dt>
+          <dd>{{ t('contact.location') }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('contact.responseTitle') }}</dt>
+          <dd>{{ t('contact.response') }}</dd>
+        </div>
+      </dl>
+    </div>
 
-        <div class="contact-info">
-          <div class="info-card">
-            <div class="info-icon">✉️</div>
-            <h3>{{ t('contact.emailTitle') }}</h3>
-            <p>kobra3dmaker@gmail.com</p>
-          </div>
-          
-          <div class="info-card">
-            <div class="info-icon">📍</div>
-            <h3>{{ t('contact.locationTitle') }}</h3>
-            <p>{{ t('contact.location') }}</p>
-          </div>
-          
-          <div class="info-card">
-            <div class="info-icon">⏱️</div>
-            <h3>{{ t('contact.responseTitle') }}</h3>
-            <p>{{ t('contact.response') }}</p>
+    <section id="faq" class="faq container" aria-labelledby="faq-title">
+      <h2 id="faq-title" class="faq-title display">{{ t('contact.faqTitle') }}</h2>
+      <div v-for="key in faqs" :key="key" class="faq-item" :class="{ open: openFaq === key }">
+        <h3>
+          <button
+            class="faq-q"
+            :aria-expanded="openFaq === key"
+            :aria-controls="`faq-${key}`"
+            @click="toggleFaq(key)"
+          >
+            {{ t(`contact.faqs.${key}.question`) }}
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        </h3>
+        <div :id="`faq-${key}`" class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>{{ t(`contact.faqs.${key}.answer`) }}</p>
           </div>
         </div>
       </div>
-
-      <section class="faq-section">
-        <h2 class="section-title">{{ t('contact.faqTitle') }}</h2>
-        <div class="faq-accordion">
-          <div 
-            v-for="(faq, index) in faqs" 
-            :key="faq"
-            class="faq-item"
-            :class="{ active: openFaqIndex === index }"
-          >
-            <button class="faq-question" @click="toggleFaq(index)">
-              {{ t(`contact.faqs.${faq}.question`) }}
-              <span class="faq-icon">{{ openFaqIndex === index ? '−' : '+' }}</span>
-            </button>
-            <div class="faq-answer" v-show="openFaqIndex === index">
-              <p>{{ t(`contact.faqs.${faq}.answer`) }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+    </section>
   </main>
 </template>
 
 <style scoped>
-.contact-view {
-  padding: 4rem 1rem 6rem;
-  background-color: var(--color-bg);
-  min-height: calc(100vh - var(--navbar-height));
+.contact {
+  padding-bottom: clamp(3rem, 7vw, 6rem);
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: 4rem;
+.head {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .title {
-  font-size: 2.5rem;
-  color: var(--color-primary);
-  margin-bottom: 1rem;
+  font-size: clamp(2.75rem, 8vw, 6rem);
+  animation: rise-blur 1.1s var(--ease-apple) both;
+}
+
+.subtitle,
+.layout {
+  animation: rise 1s var(--ease-apple) 200ms both;
 }
 
 .subtitle {
-  color: var(--color-text-light);
-  font-size: 1.2rem;
+  margin-top: 1rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  color: var(--ink-2);
+  max-width: 48ch;
 }
 
-.contact-layout {
+.layout {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 4rem;
-  margin-bottom: 6rem;
+  gap: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 2px solid var(--rule);
 }
 
-@media (min-width: 768px) {
-  .contact-layout {
-    grid-template-columns: 3fr 2fr;
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 4rem;
   }
 }
 
-.contact-form-container {
-  background-color: var(--color-surface);
-  padding: 2.5rem;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+.info > div {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule-soft);
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
+.info > div:first-child {
+  padding-top: 0;
 }
 
-.form-group label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: var(--color-primary);
+.info dt {
+  font-weight: 800;
+  font-stretch: var(--semi-wide);
+  margin-bottom: 0.25rem;
 }
 
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-size: 1rem;
-  transition: var(--transition);
-  background-color: var(--color-bg);
+.info dd {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
-}
-
-.btn {
-  display: inline-block;
-  padding: 1rem 2rem;
-  border-radius: var(--radius-sm);
+.info a {
+  color: var(--ink);
   font-weight: 600;
-  text-align: center;
-  transition: var(--transition);
-  cursor: pointer;
-  border: none;
-  font-size: 1rem;
-  width: 100%;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.btn-primary {
-  background-color: var(--color-accent);
-  color: white;
+.faq {
+  margin-top: clamp(3rem, 7vw, 5rem);
+  max-width: 980px;
 }
 
-.btn-primary:hover {
-  background-color: var(--color-accent-hover);
-}
-
-.success-message {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--color-accent);
-}
-
-.success-message h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.success-message p {
-  color: var(--color-text);
-}
-
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.info-card {
-  background-color: var(--color-surface);
-  padding: 2rem;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  text-align: center;
-}
-
-.info-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.info-card h3 {
-  color: var(--color-primary);
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-
-.info-card p {
-  color: var(--color-text-light);
-}
-
-.faq-section {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.section-title {
-  text-align: center;
-  font-size: 2rem;
-  color: var(--color-primary);
-  margin-bottom: 2.5rem;
-}
-
-.faq-accordion {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.faq-title {
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+  padding: 1.25rem 0 1rem;
+  border-top: 2px solid var(--rule);
 }
 
 .faq-item {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+  border-bottom: 2px solid var(--rule);
 }
 
-.faq-item.active {
-  border-color: var(--color-accent);
-}
-
-.faq-question {
+.faq-q {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  cursor: pointer;
+  gap: 1rem;
+  padding: 1.1rem 0;
   text-align: left;
+  font-stretch: var(--semi-wide);
+  font-weight: 750;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  letter-spacing: -0.01em;
 }
 
 .faq-icon {
-  font-size: 1.5rem;
-  color: var(--color-accent);
+  flex-shrink: 0;
+  transition: transform 220ms var(--ease-out);
 }
 
-.faq-answer {
-  padding: 0 1.5rem 1.5rem;
-  color: var(--color-text-light);
-  line-height: 1.6;
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+}
+
+.faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms var(--ease-out);
+}
+
+.faq-item.open .faq-a {
+  grid-template-rows: 1fr;
+}
+
+.faq-a-inner {
+  overflow: hidden;
+}
+
+.faq-a p {
+  padding-bottom: 1.25rem;
+  color: var(--ink-2);
+  max-width: 65ch;
+}
+
+.faq-item:not(.open) .faq-a-inner {
+  visibility: hidden;
+  transition: visibility 0s 240ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-a,
+  .faq-icon {
+    transition: none;
+  }
 }
 </style>

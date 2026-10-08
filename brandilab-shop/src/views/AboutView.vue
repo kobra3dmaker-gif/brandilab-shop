@@ -5,241 +5,189 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <main class="about-view">
-    <header class="about-header">
+  <main class="about">
+    <header class="masthead-field">
       <div class="container">
-        <h1 class="title">{{ t('about.title') }}</h1>
+        <h1 class="title display">{{ t('about.title') }}</h1>
         <p class="subtitle">{{ t('about.subtitle') }}</p>
       </div>
     </header>
 
-    <section class="section story-section">
-      <div class="container">
-        <div class="story-grid">
-          <div class="story-text">
-            <h2>{{ t('about.storyTitle') }}</h2>
-            <p>{{ t('about.story1') }}</p>
-            <p>{{ t('about.story2') }}</p>
-          </div>
-          <div class="story-image">
-            <div class="image-placeholder">
-              <span>{{ t('about.studioImage') }}</span>
-            </div>
-          </div>
-        </div>
+    <section v-reveal class="story container" aria-labelledby="story-title">
+      <h2 id="story-title" class="section-title display">{{ t('about.storyTitle') }}</h2>
+      <div class="story-cols">
+        <p>{{ t('about.story1') }}</p>
+        <p>{{ t('about.story2') }}</p>
       </div>
     </section>
 
-    <section class="section process-section">
-      <div class="container">
-        <h2 class="section-title">{{ t('about.processTitle') }}</h2>
-        <div class="process-steps">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-icon">✏️</div>
-            <h3>{{ t('about.designTitle') }}</h3>
-            <p>{{ t('about.designText') }}</p>
-          </div>
-          <div class="step-connector"></div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-icon">🖨️</div>
-            <h3>{{ t('about.printTitle') }}</h3>
-            <p>{{ t('about.printText') }}</p>
-          </div>
-          <div class="step-connector"></div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-icon">📦</div>
-            <h3>{{ t('about.shipTitle') }}</h3>
-            <p>{{ t('about.shipText') }}</p>
-          </div>
-        </div>
-      </div>
+    <section v-reveal class="process container" aria-labelledby="process-title">
+      <h2 id="process-title" class="section-title display">{{ t('about.processTitle') }}</h2>
+      <ol class="steps">
+        <li class="step">
+          <h3>{{ t('about.designTitle') }}</h3>
+          <p>{{ t('about.designText') }}</p>
+        </li>
+        <li class="step">
+          <h3>{{ t('about.printTitle') }}</h3>
+          <p>{{ t('about.printText') }}</p>
+        </li>
+        <li class="step">
+          <h3>{{ t('about.shipTitle') }}</h3>
+          <p>{{ t('about.shipText') }}</p>
+        </li>
+      </ol>
     </section>
 
-    <section class="section values-section">
+    <section class="mission" aria-labelledby="mission-title">
       <div class="container">
-        <div class="mission-box">
-          <h2>{{ t('about.missionTitle') }}</h2>
-          <p>{{ t('about.mission') }}</p>
-        </div>
+        <h2 id="mission-title" class="mission-title">{{ t('about.missionTitle') }}</h2>
+        <p class="mission-text">{{ t('about.mission') }}</p>
+        <RouterLink :to="{ path: '/', hash: '#catalogo' }" class="btn btn-ink">
+          {{ t('about.cta') }}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </RouterLink>
       </div>
     </section>
   </main>
 </template>
 
 <style scoped>
-.about-view {
-  background-color: var(--color-bg);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.section {
-  padding: 5rem 0;
-}
-
-.about-header {
-  background-color: var(--color-brand-dark);
-  color: white;
-  padding: 6rem 1rem;
-  text-align: center;
+.masthead-field {
+  background: var(--paper-2);
+  color: var(--ink);
+  padding: clamp(2.5rem, 7vw, 6rem) 0 clamp(2rem, 4vw, 3rem);
 }
 
 .title {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: clamp(2.75rem, 8vw, 6rem);
+  max-width: 12ch;
+  animation: rise-blur 1.1s var(--ease-apple) both;
 }
 
 .subtitle {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  font-weight: 300;
+  animation: rise 1s var(--ease-apple) 200ms both;
 }
 
-.story-grid {
+.subtitle {
+  margin-top: 1rem;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+  padding: 1.25rem 0 1.5rem;
+  border-top: 2px solid var(--rule);
+}
+
+.story {
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.story-cols {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 3rem;
-  align-items: center;
+  gap: 1.25rem 3rem;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--ink-2);
 }
 
-@media (min-width: 768px) {
-  .story-grid {
+.story-cols p {
+  max-width: 62ch;
+}
+
+@media (min-width: 860px) {
+  .story-cols {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.story-text h2 {
-  font-size: 2.2rem;
-  color: var(--color-primary);
-  margin-bottom: 1.5rem;
+.process {
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
 }
 
-.story-text p {
-  color: var(--color-text-light);
-  line-height: 1.8;
-  margin-bottom: 1.5rem;
+.steps {
+  display: grid;
+  gap: 0;
+}
+
+.step {
+  padding: 1.25rem 0;
+  border-top: 2px solid var(--rule);
+}
+
+.step h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-stretch: var(--semi-wide);
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.step h3::before {
+  content: '';
+  width: 0.85rem;
+  height: 0.85rem;
+  background: var(--blue);
+}
+
+.step p {
+  color: var(--ink-2);
+  max-width: 38ch;
+}
+
+@media (min-width: 860px) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 2px solid var(--rule);
+  }
+
+  .step {
+    border-top: none;
+    padding: 1.5rem 1.75rem 0 0;
+  }
+
+  .step + .step {
+    padding-left: 1.75rem;
+    border-left: 2px solid var(--rule);
+  }
+}
+
+.mission {
+  background: var(--tile-dark);
+  color: var(--on-tile-dark);
+  padding: clamp(3rem, 7vw, 5.5rem) 0;
+}
+
+.mission-title {
+  font-stretch: var(--semi-wide);
+  font-weight: 800;
   font-size: 1.1rem;
-}
-
-.image-placeholder {
-  background-color: var(--color-border);
-  border-radius: var(--radius-md);
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-light);
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.process-section {
-  background-color: var(--color-surface);
-}
-
-.section-title {
-  text-align: center;
-  font-size: 2.2rem;
-  color: var(--color-primary);
-  margin-bottom: 4rem;
-}
-
-.process-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: center;
-}
-
-@media (min-width: 768px) {
-  .process-steps {
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-  }
-}
-
-.step-card {
-  text-align: center;
-  max-width: 300px;
-  position: relative;
-  z-index: 1;
-}
-
-.step-number {
-  width: 40px;
-  height: 40px;
-  background-color: var(--color-accent);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin: 0 auto 1rem;
-}
-
-.step-icon {
-  font-size: 3rem;
   margin-bottom: 1rem;
 }
 
-.step-card h3 {
-  color: var(--color-primary);
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+.mission-text {
+  font-stretch: var(--semi-wide);
+  font-weight: 650;
+  font-size: clamp(1.4rem, 2.8vw, 2.3rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  max-width: 32ch;
+  margin-bottom: 2rem;
+  text-wrap: pretty;
 }
 
-.step-card p {
-  color: var(--color-text-light);
-  line-height: 1.6;
+.mission .btn-ink {
+  background: var(--blue);
+  color: var(--on-blue);
 }
 
-.step-connector {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .step-connector {
-    display: block;
-    width: 100px;
-    height: 2px;
-    background-color: var(--color-border);
-    margin-top: 20px;
-  }
-}
-
-.values-section {
-  background-color: var(--color-bg);
-}
-
-.mission-box {
-  background-color: var(--color-brand-dark);
-  color: white;
-  padding: 4rem 2rem;
-  border-radius: var(--radius-lg);
-  text-align: center;
-  box-shadow: var(--shadow-lg);
-}
-
-.mission-box h2 {
-  font-size: 2.2rem;
-  margin-bottom: 1.5rem;
-}
-
-.mission-box p {
-  font-size: 1.25rem;
-  line-height: 1.8;
-  max-width: 800px;
-  margin: 0 auto;
-  opacity: 0.9;
+.mission .btn-ink:hover {
+  background: var(--blue-hover);
 }
 </style>

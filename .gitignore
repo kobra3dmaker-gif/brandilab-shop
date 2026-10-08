@@ -1,0 +1,6 @@
+# Impeccable working files (review screenshots, surface briefs, design sidecar)
+.impeccable/
+
+# Cloudflare Wrangler local dev state (simulated emails, caches)
+.wrangler/
+api-worker/node_modules/.mf/

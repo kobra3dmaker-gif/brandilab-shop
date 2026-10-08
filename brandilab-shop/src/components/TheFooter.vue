@@ -1,284 +1,218 @@
-<template>
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-col brand-col">
-          <img class="footer-logo" :src="logo" :alt="t('footer.logoAlt')" width="80" height="80" loading="lazy">
-          <h3 class="footer-brand">BrandiLab</h3>
-          <p class="footer-text">{{ t('footer.tagline') }}</p>
-        </div>
-        
-        <div class="footer-col">
-          <h4 class="col-title">{{ t('footer.quickLinks') }}</h4>
-          <nav class="footer-nav">
-            <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
-            <RouterLink to="/shop">{{ t('nav.shop') }}</RouterLink>
-            <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
-            <RouterLink to="/contact">{{ t('nav.contact') }}</RouterLink>
-          </nav>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="col-title">{{ t('footer.supportTitle') }}</h4>
-          <nav class="footer-nav">
-            <RouterLink to="/contact">{{ t('footer.helpCenter') }}</RouterLink>
-            <RouterLink to="/about#materials">{{ t('footer.shippingPolicy') }}</RouterLink>
-            <RouterLink to="/faq">{{ t('footer.returns') }}</RouterLink>
-            <RouterLink to="/faq">{{ t('footer.faq') }}</RouterLink>
-          </nav>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="col-title">{{ t('footer.aboutTitle') }}</h4>
-          <nav class="footer-nav">
-            <RouterLink to="/about#story">{{ t('footer.ourStory') }}</RouterLink>
-            <RouterLink to="/about#materials">{{ t('footer.materials') }}</RouterLink>
-          </nav>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="col-title">{{ t('footer.contactTitle') }}</h4>
-          <address class="footer-address">
-            <p>{{ t('footer.emailLabel') }}: <a href="mailto:kobra3dmaker@gmail.com">kobra3dmaker@gmail.com</a></p>
-            <p>{{ t('footer.locationLabel') }}: {{ t('footer.location') }}</p>
-          </address>
-
-          <h4 class="col-title social-heading">{{ t('footer.socialTitle') }}</h4>
-          <div class="social-links-footer">
-            <a href="https://www.tiktok.com/@brandilab" target="_blank" rel="noopener noreferrer" aria-label="TikTok Shop">
-              <img :src="tiktokLogo" alt="TikTok Shop" class="footer-social-logo" />
-            </a>
-            <a href="https://www.vinted.it/member/315209443" target="_blank" rel="noopener noreferrer" aria-label="Vinted">
-              <img :src="vintedLogo" alt="Vinted" class="footer-social-logo" />
-            </a>
-            <a href="https://www.ebay.it/usr/brandilab" target="_blank" rel="noopener noreferrer" aria-label="eBay">
-              <img :src="ebayLogo" alt="eBay" class="footer-social-logo" />
-            </a>
-            <a href="https://www.subito.it/utente/131079177" target="_blank" rel="noopener noreferrer" aria-label="Subito">
-              <img :src="subitoLogo" alt="Subito" class="footer-social-logo" />
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="footer-bottom">
-      <div class="footer-container bottom-container">
-        <p class="copyright">
-          {{ t('footer.rights') }}
-          <button v-if="analyticsEnabled" class="cookie-link" @click="reopenBanner">{{ t('footer.cookiePreferences') }}</button>
-        </p>
-        <div class="bottom-links">
-          <RouterLink to="/contact">{{ t('footer.helpCenter') }}</RouterLink>
-          <RouterLink to="/about">{{ t('footer.aboutTitle') }}</RouterLink>
-          <RouterLink to="/about#materials">{{ t('footer.shippingPolicy') }}</RouterLink>
-        </div>
-      </div>
-    </div>
-  </footer>
-</template>
-
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-import logo from '@/assets/logo.webp';
-import { analyticsEnabled, useAnalyticsConsent } from '@/analytics';
+import { useI18n } from 'vue-i18n'
+import { analyticsEnabled, useAnalyticsConsent } from '@/analytics'
 
 import ebayLogo from '@/assets/logos/footer/ebay.png'
 import vintedLogo from '@/assets/logos/footer/vinted.jpg'
 import subitoLogo from '@/assets/logos/footer/subito.jpg'
 import tiktokLogo from '@/assets/logos/footer/tiktok.png'
 
-const { t } = useI18n();
-const { reopenBanner } = useAnalyticsConsent();
+const { t } = useI18n()
+const { reopenBanner } = useAnalyticsConsent()
+
+const marketplaces = [
+  { name: 'TikTok Shop', href: 'https://www.tiktok.com/@brandilab', logo: tiktokLogo },
+  { name: 'Vinted', href: 'https://www.vinted.it/member/315209443', logo: vintedLogo },
+  { name: 'eBay', href: 'https://www.ebay.it/usr/brandilab', logo: ebayLogo },
+  { name: 'Subito', href: 'https://www.subito.it/utente/131079177', logo: subitoLogo },
+]
 </script>
+
+<template>
+  <footer class="footer">
+    <div class="inner">
+      <p class="wordmark" aria-hidden="true">
+        <span class="ch">BrandiLab</span>
+      </p>
+      <p class="tagline">{{ t('footer.tagline') }}</p>
+
+      <div class="cols">
+        <nav class="col" :aria-label="t('footer.shopTitle')">
+          <h2 class="col-title">{{ t('footer.shopTitle') }}</h2>
+          <RouterLink :to="{ path: '/', hash: '#catalogo' }">{{ t('nav.catalogue') }}</RouterLink>
+          <RouterLink to="/about">{{ t('footer.ourStory') }}</RouterLink>
+          <RouterLink :to="{ path: '/contact', query: { type: 'custom' } }">{{ t('footer.custom') }}</RouterLink>
+        </nav>
+
+        <nav class="col" :aria-label="t('footer.supportTitle')">
+          <h2 class="col-title">{{ t('footer.supportTitle') }}</h2>
+          <RouterLink :to="{ path: '/contact', hash: '#faq' }">{{ t('footer.faq') }}</RouterLink>
+          <RouterLink :to="{ path: '/contact', hash: '#faq' }">{{ t('footer.shipping') }}</RouterLink>
+          <RouterLink to="/contact">{{ t('nav.contact') }}</RouterLink>
+        </nav>
+
+        <div class="col">
+          <h2 class="col-title">{{ t('footer.contactTitle') }}</h2>
+          <a href="mailto:brandilab3d@gmail.com">brandilab3d@gmail.com</a>
+          <span>{{ t('footer.location') }}</span>
+        </div>
+
+        <div class="col">
+          <h2 class="col-title">{{ t('footer.socialTitle') }}</h2>
+          <ul class="markets">
+            <li v-for="m in marketplaces" :key="m.name">
+              <a :href="m.href" target="_blank" rel="noopener noreferrer">
+                <img :src="m.logo" alt="" width="24" height="24" loading="lazy" />
+                {{ m.name }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <p>{{ t('footer.rights') }} · {{ t('footer.vat') }} 04260600368 · 41026 Pavullo nel Frignano (MO)</p>
+        <button v-if="analyticsEnabled" class="cookie-link" @click="reopenBanner">{{ t('footer.cookiePreferences') }}</button>
+      </div>
+    </div>
+  </footer>
+</template>
 
 <style scoped>
 .footer {
-  background-color: var(--color-brand-dark);
-  color: var(--color-on-dark);
-  font-family: var(--font-family, sans-serif);
-  padding-top: 48px;
+  background: var(--paper-2);
+  color: var(--ink);
 }
 
-.footer-container {
-  max-width: 1440px;
+.inner {
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: clamp(2.5rem, 6vw, 4.5rem) var(--gutter) 1.5rem;
 }
 
-.footer-grid {
+.wordmark {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: clamp(3.25rem, 13.5vw, 13rem);
+  line-height: 0.82;
+  letter-spacing: -0.055em;
+  color: var(--ink);
+  margin-left: -0.04em;
+  display: flex;
+  overflow: clip;
+  padding-bottom: 0.04em;
+}
+
+.ch {
+  display: inline-block;
+}
+
+/* Letters rise out of the fold as the footer comes into view */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ch {
+      animation: letter-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 85%;
+    }
+  }
+}
+
+@keyframes letter-rise {
+  from {
+    translate: 0 105%;
+  }
+}
+
+.tagline {
+  max-width: 52ch;
+  margin-top: 1.25rem;
+  color: var(--ink-2);
+}
+
+.cols {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  margin-bottom: 48px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem 1.5rem;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--rule);
 }
 
-@media (min-width: 640px) {
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (min-width: 900px) {
+  .cols {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 960px) {
-  .footer-grid {
-    grid-template-columns: 1.8fr 1fr 1fr 1fr 1.2fr;
-    gap: 24px;
+@media (max-width: 899px) {
+  .col:nth-child(3) {
+    grid-column: 1 / -1;
   }
 }
 
-.footer-logo {
-  display: block;
-  width: 80px;
-  height: 80px;
-  max-width: none;
-  object-fit: contain;
-  margin-bottom: 12px;
-}
-
-.cookie-link {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-left: 12px;
-  color: inherit;
-  font-size: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.cookie-link:hover {
-  color: var(--color-accent);
-}
-
-.footer-brand {
-  font-size: 1.25rem;
-  font-weight: 800;
-  margin: 0 0 12px 0;
-  color: var(--color-on-dark);
-}
-
-.footer-text {
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.5;
-  margin: 0;
-  font-size: 0.85rem;
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .col-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  color: var(--color-on-dark);
+  font-stretch: var(--semi-wide);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
 }
 
-.social-heading {
-  margin-top: 20px;
+.col a,
+.col span {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
 }
 
-.footer-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.col a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
 }
 
-.footer-nav a {
-  color: rgba(255, 255, 255, 0.65);
-  text-decoration: none;
-  transition: var(--transition, all 0.3s ease);
-  font-size: 0.875rem;
-}
-
-.footer-nav a:hover {
-  color: var(--color-accent, #16a085);
-}
-
-.footer-address {
-  font-style: normal;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.5;
-  font-size: 0.875rem;
-}
-
-.footer-address p {
-  margin: 0 0 6px 0;
-}
-
-.footer-address a {
-  color: rgba(255, 255, 255, 0.65);
-  text-decoration: none;
-  transition: var(--transition, all 0.3s ease);
-}
-
-.footer-address a:hover {
-  color: var(--color-accent, #16a085);
-}
-
-.social-links-footer {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.social-links-footer a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition, all 0.3s ease);
-}
-
-.social-links-footer a:hover {
-  transform: translateY(-2px) scale(1.08);
-}
-
-.footer-social-logo {
-  height: 30px;
-  width: 30px;
-  object-fit: cover;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px 0;
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-.bottom-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-@media (min-width: 640px) {
-  .bottom-container {
-    flex-direction: row;
-    justify-content: space-between;
+@media (hover: hover) and (pointer: fine) {
+  .col a:hover {
+    text-decoration-color: currentColor;
   }
 }
 
-.copyright {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.8rem;
-}
-
-.bottom-links {
+.markets {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.markets a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.markets img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+
+.bottom {
+  display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 0.85rem;
+  color: var(--ink-3);
 }
 
-.bottom-links a {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.8rem;
-  text-decoration: none;
-  transition: var(--transition-fast);
+.cookie-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.bottom-links a:hover {
-  color: var(--color-accent);
+.footer :focus-visible {
+  outline-color: var(--focus);
 }
 </style>

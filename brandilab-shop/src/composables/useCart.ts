@@ -64,7 +64,7 @@ export function useCart() {
         name: product.title,
         price: product.price,
         quantity,
-        image: product.image ? urlFor(product.image).width(100).url() : '',
+        image: product.image ? urlFor(product.image).width(200).auto('format').url() : '',
       })
     }
   }

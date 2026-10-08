@@ -7,8 +7,8 @@
       </p>
       <!-- Accept and decline are deliberately equally prominent (Garante Privacy guidelines) -->
       <div class="cookie-actions">
-        <button class="cookie-btn" @click="decline">{{ t('cookies.decline') }}</button>
-        <button class="cookie-btn" @click="accept">{{ t('cookies.accept') }}</button>
+        <button class="btn btn-line cookie-btn" @click="decline">{{ t('cookies.decline') }}</button>
+        <button class="btn btn-line cookie-btn" @click="accept">{{ t('cookies.accept') }}</button>
       </div>
     </div>
   </Transition>
@@ -25,34 +25,29 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
 <style scoped>
 .cookie-banner {
   position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  z-index: 900; /* below the navbar (1000) and the Snipcart cart */
-  max-width: calc(100vw - 32px);
-  margin: 0;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 900;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  font-family: var(--font-family);
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--rule);
 }
 
 .cookie-text {
-  font-size: 0.85rem;
-  line-height: 1.4;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .cookie-text strong {
   display: block;
   margin-bottom: 4px;
-  color: var(--color-primary);
-  font-size: 0.95rem;
+  font-stretch: var(--semi-wide);
+  font-size: 1rem;
 }
 
 .cookie-actions {
@@ -62,24 +57,8 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
 
 .cookie-btn {
   flex: 1;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-accent);
-  background: transparent;
-  color: var(--color-accent);
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: var(--transition);
-}
-
-.cookie-btn:hover {
-  background: var(--color-accent);
-  color: #fff;
-}
-
-.cookie-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  min-height: 44px;
+  font-size: 0.9rem;
 }
 
 @media (min-width: 640px) {
@@ -87,7 +66,7 @@ const { showBanner, accept, decline } = useAnalyticsConsent()
     right: auto;
     left: 24px;
     bottom: 24px;
-    max-width: 360px;
+    max-width: 380px;
   }
 }
 </style>
