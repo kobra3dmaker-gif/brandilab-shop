@@ -2,6 +2,7 @@
 import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCart } from '@/composables/useCart'
+import { getAuthHeaders } from '@/composables/useAuth'
 import { useProducts } from '@/composables/useProducts'
 import { useCatalog } from '@/composables/useCatalog'
 
@@ -31,7 +32,7 @@ async function checkout() {
   try {
     const res = await fetch(`${API_BASE}/api/create-checkout-session`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         items: items.value.map((i) => ({ id: i.id, quantity: i.quantity })),
       }),

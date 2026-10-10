@@ -1,11 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 
 const HomeView = () => import('@/views/HomeView.vue')
 const ProductView = () => import('@/views/ProductView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
 const CheckoutSuccessView = () => import('@/views/CheckoutSuccessView.vue')
-const AdminDashboard = () => import('@/views/AdminDashboard.vue')
+const AuthView = () => import('@/views/AuthView.vue')
+const AccountDashboardView = () => import('@/views/AccountDashboardView.vue')
+const OrderDetailView = () => import('@/views/OrderDetailView.vue')
+const AdminOrdersView = () => import('@/views/AdminOrdersView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,22 +36,65 @@ const router = createRouter({
     },
     {
       path: '/order-confirmation',
-      redirect: '/checkout-success'
+      redirect: '/checkout-success',
     },
     {
       path: '/thank-you',
-      redirect: '/checkout-success'
+      redirect: '/checkout-success',
     },
     {
       path: '/checkout-success',
       name: 'checkout-success',
       component: CheckoutSuccessView,
     },
+    // ── Customer Portal (Area Riservata) ──
+    {
+      path: '/login',
+      name: 'login',
+      component: AuthView,
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: AuthView,
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: AuthView,
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: AuthView,
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: AccountDashboardView,
+      meta: { requiresCustomerAuth: true },
+    },
+    {
+      path: '/account/orders',
+      redirect: '/account',
+    },
+    {
+      path: '/account/orders/:id',
+      name: 'order-detail',
+      component: OrderDetailView,
+      meta: { requiresCustomerAuth: true },
+    },
+    // ── Lightweight Admin Panel (Order Status & Tracking Management) ──
+    {
+      path: '/admin',
+      name: 'admin-orders',
+      component: AdminOrdersView,
+    },
     {
       path: '/admin-dashboard',
-      name: 'AdminDashboard',
-      component: AdminDashboard,
-      meta: { requiresAuth: true },
+      redirect: '/admin',
     },
   ],
   scrollBehavior(to, _from, savedPosition) {
@@ -87,18 +134,22 @@ router.onError((error, to) => {
   }
 })
 
-// Admin authentication guard
-const ADMIN_PASSWORD = 'brandilab2026'
-
+// Customer Portal navigation guard
 router.beforeEach((to) => {
-  if (!to.meta.requiresAuth) return true
-  if (localStorage.getItem('adminAuth') === 'true') return true
-  const password = prompt('Restricted Area — Enter Admin Password:')
-  if (password === ADMIN_PASSWORD) {
-    localStorage.setItem('adminAuth', 'true')
-    return true
+  const { isAuthenticated } = useAuth()
+
+  if (to.meta.requiresCustomerAuth && !isAuthenticated.value) {
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    }
   }
-  return '/'
+
+  if (to.meta.guestOnly && isAuthenticated.value) {
+    return '/account'
+  }
+
+  return true
 })
 
 export default router

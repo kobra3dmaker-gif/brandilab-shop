@@ -1,10 +1,12 @@
 import Stripe from 'stripe';
 import { validateToken, getSession, notifyPayment, toCents } from './_snipcart.js';
 import { handleContact } from './contact.js';
+import { handleAuthRoutes, getAuthenticatedUser } from './auth.js';
+import { handleOrderRoutes } from './orders.js';
 
 const getAllowedOrigin = (request) => {
   const origin = request.headers.get('Origin');
-  if (origin && (origin.endsWith('brandilab.it') || origin.startsWith('http://localhost:'))) {
+  if (origin && (origin.endsWith('brandilab.it') || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
     return origin;
   }
   return 'https://www.brandilab.it';
@@ -12,14 +14,19 @@ const getAllowedOrigin = (request) => {
 
 const getCorsHeaders = (request) => ({
   'Access-Control-Allow-Origin': getAllowedOrigin(request),
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Key',
+  'Access-Control-Allow-Credentials': 'true',
 });
 
-function json(data, status = 200, request) {
+function json(data, status = 200, request, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...(request ? getCorsHeaders(request) : getCorsHeaders(new Request('https://www.brandilab.it'))), 'Content-Type': 'application/json' },
+    headers: {
+      ...(request ? getCorsHeaders(request) : getCorsHeaders(new Request('https://www.brandilab.it'))),
+      'Content-Type': 'application/json',
+      ...extraHeaders,
+    },
   });
 }
 
@@ -35,6 +42,26 @@ export default {
     const path = url.pathname;
 
     try {
+      // ── Customer Portal Auth & Address Book Routes ──
+      if (path.startsWith('/api/auth/') || path.startsWith('/api/me/addresses')) {
+        const authResult = await handleAuthRoutes(request, env, path);
+        if (authResult) {
+          return json(authResult.body, authResult.status, request, authResult.headers || {});
+        }
+      }
+
+      // ── Customer Portal Orders, Stripe Session Confirmation & Admin Status FSM Routes ──
+      if (
+        path.startsWith('/api/me/orders') ||
+        path.startsWith('/api/orders/') ||
+        path.startsWith('/api/admin/orders')
+      ) {
+        const orderResult = await handleOrderRoutes(request, env, path, url);
+        if (orderResult) {
+          return json(orderResult.body, orderResult.status, request, orderResult.headers || {});
+        }
+      }
+
       if (path === '/api/payment-methods' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const { publicToken } = body;
@@ -131,12 +158,13 @@ export default {
           return json({ error: 'finalize_failed' }, 500, request);
         }
       }
+
       if (path === '/api/contact' && request.method === 'POST') {
         const { status, body } = await handleContact(request, env);
         return json(body, status, request);
       }
 
-      // ── Stripe Checkout Session (replaces Snipcart) ──
+      // ── Stripe Checkout Session (replaces Snipcart & links to Customer Portal) ──
       if (path === '/api/create-checkout-session' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const { items: cartItems } = body;
@@ -153,6 +181,9 @@ export default {
         }
 
         try {
+          // Check if customer is logged into the Customer Portal
+          const authUser = await getAuthenticatedUser(request, env).catch(() => null);
+
           // Fetch product prices from Sanity (server-side — NEVER trust client prices)
           const ids = cartItems.map((i) => `"${i.id}"`).join(',');
           const query = `*[_type == "product" && _id in [${ids}]]{ _id, title, price, "imageUrl": image.asset->url }`;
@@ -186,6 +217,10 @@ export default {
                 product_data: {
                   name: product.title,
                   ...(product.imageUrl ? { images: [product.imageUrl] } : {}),
+                  metadata: {
+                    productId: product._id,
+                    sku: `BL-${product._id.slice(0, 6).toUpperCase()}`,
+                  },
                 },
                 unit_amount: Math.round(product.price * 100),
               },
@@ -199,6 +234,10 @@ export default {
           const session = await stripe.checkout.sessions.create({
             mode: 'payment',
             line_items: lineItems,
+            ...(authUser?.email ? { customer_email: authUser.email } : {}),
+            metadata: {
+              ...(authUser?.id ? { userId: authUser.id } : {}),
+            },
             // Enable all available payment methods (cards, Apple Pay, Google Pay, PayPal, etc.)
             // via Stripe Dashboard settings — no need to hardcode payment_method_types
             success_url: `${SITE}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,

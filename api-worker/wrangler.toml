@@ -5,6 +5,8 @@ compatibility_date = "2024-09-23"
 # Environment variables to be set via `wrangler secret put` or Cloudflare Dashboard:
 # - STRIPE_SECRET_KEY
 # - SNIPCART_SECRET_API_KEY
+# - JWT_SECRET          (secret for signing customer session tokens)
+# - ADMIN_SECRET        (secret key for updating order statuses via /api/admin/orders/*)
 
 [vars]
 SITE_URL = "https://www.brandilab.it"
@@ -16,3 +18,11 @@ CONTACT_TO = "brandilab3d@gmail.com"
 [[send_email]]
 name = "CONTACT_EMAIL"
 destination_address = "brandilab3d@gmail.com"
+
+# Cloudflare D1 Database Binding for Customer Portal (Users, Orders, Timeline)
+# Create in production with: npx wrangler d1 create brandilab-db
+# Apply schema locally with: npx wrangler d1 execute brandilab-db --local --file=./schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "brandilab-db"
+database_id = "00000000-0000-0000-0000-000000000000"

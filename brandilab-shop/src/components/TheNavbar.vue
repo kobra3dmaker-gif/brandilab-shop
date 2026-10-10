@@ -3,12 +3,14 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCart } from '@/composables/useCart'
+import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale, SUPPORTED_LOCALES, LOCALE_NAMES } from '@/i18n'
 import { cartFlood, type Field } from '@/composables/useCatalog'
 import logo from '@/assets/logo.webp'
 
 const { itemCount, openCart } = useCart()
+const { isAuthenticated, initials } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
 const { locale, setLocale } = useLocale()
@@ -117,6 +119,19 @@ const links = [
           </svg>
         </button>
 
+        <RouterLink
+          :to="isAuthenticated ? '/account' : '/login'"
+          class="account-btn desktop"
+          :aria-label="t('nav.account')"
+        >
+          <span v-if="isAuthenticated" class="account-initials">{{ initials }}</span>
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+          </svg>
+          <span class="account-word">{{ isAuthenticated ? t('nav.myOrders') : t('nav.account') }}</span>
+        </RouterLink>
+
         <button class="cart" :aria-label="t('nav.cartLabel', { count: itemCount }, itemCount)" @click="openCart">
           <span class="cart-word">{{ t('nav.cart') }}</span>
           <span
@@ -150,6 +165,13 @@ const links = [
         <nav :aria-label="t('nav.mainNav')">
           <RouterLink v-for="link in links" :key="link.key" :to="link.to" class="mobile-link" @click="menuOpen = false">
             {{ t(link.key) }}
+          </RouterLink>
+          <RouterLink
+            :to="isAuthenticated ? '/account' : '/login'"
+            class="mobile-link"
+            @click="menuOpen = false"
+          >
+            {{ isAuthenticated ? t('nav.myOrders') : t('nav.account') }}
           </RouterLink>
         </nav>
         <div class="mobile-tools">
@@ -294,6 +316,26 @@ const links = [
 
 .icon-btn:active {
   transform: scale(0.94);
+}
+
+.account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.account-initials {
+  width: 28px;
+  height: 28px;
+  background: var(--ink);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  font-size: 0.74rem;
+  font-weight: 800;
 }
 
 .cart {

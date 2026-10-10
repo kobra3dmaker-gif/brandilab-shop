@@ -1,17 +1,25 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useCart } from '@/composables/useCart'
+import { useOrders } from '@/composables/useOrders'
 
 const route = useRoute()
 const { t } = useI18n()
 const { clearCart } = useCart()
+const { confirmCheckoutSession } = useOrders()
 
-onMounted(() => {
-  // Arrived via Stripe's success URL with a session_id: the order went through
-  if (route.query.session_id) {
+const confirmedOrderId = ref<string | null>(null)
+
+onMounted(async () => {
+  const sessionId = typeof route.query.session_id === 'string' ? route.query.session_id : ''
+  if (sessionId) {
     clearCart()
+    const createdOrder = await confirmCheckoutSession(sessionId)
+    if (createdOrder) {
+      confirmedOrderId.value = createdOrder.id
+    }
   }
 })
 </script>
@@ -31,9 +39,17 @@ onMounted(() => {
         <li>{{ t('thankyou.stepDeliver') }}</li>
       </ol>
       <p class="note">{{ t('thankyou.emailNote') }}</p>
-      <RouterLink :to="{ path: '/', hash: '#catalogo' }" class="btn btn-ink">
-        {{ t('thankyou.backToShop') }}
-      </RouterLink>
+      <div class="cta-row">
+        <RouterLink
+          :to="confirmedOrderId ? `/account/orders/${confirmedOrderId}` : '/account'"
+          class="btn btn-blue"
+        >
+          {{ t('thankyou.trackInPortal') }}
+        </RouterLink>
+        <RouterLink :to="{ path: '/', hash: '#catalogo' }" class="btn btn-ink">
+          {{ t('thankyou.backToShop') }}
+        </RouterLink>
+      </div>
     </div>
   </main>
 </template>
@@ -91,5 +107,11 @@ onMounted(() => {
 .note {
   color: var(--ink-2);
   max-width: 55ch;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 </style>
