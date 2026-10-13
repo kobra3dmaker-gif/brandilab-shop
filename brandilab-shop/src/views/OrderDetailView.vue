@@ -11,7 +11,7 @@ import OrderTimeline from '@/components/OrderTimeline.vue'
 const route = useRoute()
 const { t, n, locale } = useI18n()
 const { user } = useAuth()
-const { currentOrder: order, loading, fetchOrderById, simulateNextOrderStatus } = useOrders()
+const { currentOrder: order, loading, fetchOrderById } = useOrders()
 const { items: cartItems, openCart } = useCart()
 
 async function loadOrder() {
@@ -28,7 +28,7 @@ async function loadOrder() {
 // Revalidate automatically when user focuses the browser tab (Smart Focus Revalidation)
 function onWindowFocus() {
   const id = String(route.params.id || '')
-  if (id && !user.value?.isDemo) {
+  if (id) {
     fetchOrderById(id)
   }
 }
@@ -107,23 +107,6 @@ function buyAgain(item: OrderItemSnapshot) {
 
       <!-- Order Detail Content -->
       <template v-else>
-        <!-- Interactive Demo Simulator Banner (Allows live testing of the FSM & Timeline) -->
-        <aside v-if="user?.isDemo" class="demo-sim-bar no-print">
-          <p>{{ t('portal.detail.demoSimulateBar') }}</p>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
-            <RouterLink to="/admin" class="btn btn-line btn-sm">
-              ⚙️ Apri Pannello Admin (/admin)
-            </RouterLink>
-            <button
-              type="button"
-              class="btn btn-ink btn-sm"
-              @click="simulateNextOrderStatus(order.id)"
-            >
-              {{ t('portal.detail.demoAdvanceBtn') }}
-            </button>
-          </div>
-        </aside>
-
         <!-- Printable Fiscal Receipt Header (Visible when printing) -->
         <header class="print-only-header">
           <div>
@@ -261,19 +244,7 @@ function buyAgain(item: OrderItemSnapshot) {
   text-underline-offset: 3px;
 }
 
-.demo-sim-bar {
-  margin-bottom: 1.5rem;
-  padding: 0.9rem 1.25rem;
-  background: var(--paper-2);
-  border: 2px dashed var(--blue);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
+
 
 .btn-sm {
   min-height: 38px;

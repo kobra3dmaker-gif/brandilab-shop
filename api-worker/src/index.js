@@ -15,7 +15,7 @@ const getAllowedOrigin = (request) => {
 const getCorsHeaders = (request) => ({
   'Access-Control-Allow-Origin': getAllowedOrigin(request),
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Key',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Credentials': 'true',
 });
 
@@ -50,11 +50,10 @@ export default {
         }
       }
 
-      // ── Customer Portal Orders, Stripe Session Confirmation & Admin Status FSM Routes ──
+      // ── Customer Portal Orders & Stripe Session Confirmation Routes ──
       if (
         path.startsWith('/api/me/orders') ||
-        path.startsWith('/api/orders/') ||
-        path.startsWith('/api/admin/orders')
+        path.startsWith('/api/orders/')
       ) {
         const orderResult = await handleOrderRoutes(request, env, path, url);
         if (orderResult) {

@@ -6,7 +6,6 @@ compatibility_date = "2024-09-23"
 # - STRIPE_SECRET_KEY
 # - SNIPCART_SECRET_API_KEY
 # - JWT_SECRET          (secret for signing customer session tokens)
-# - ADMIN_SECRET        (secret key for updating order statuses via /api/admin/orders/*)
 
 [vars]
 SITE_URL = "https://www.brandilab.it"
@@ -25,4 +24,4 @@ destination_address = "brandilab3d@gmail.com"
 [[d1_databases]]
 binding = "DB"
 database_name = "brandilab-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "87786831-b5f4-42de-a34b-3b25b39ba4ba"

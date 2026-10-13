@@ -29,7 +29,6 @@ export interface UserProfile {
   lastName: string
   phone: string
   createdAt: string
-  isDemo?: boolean
 }
 
 export interface UserAddress {

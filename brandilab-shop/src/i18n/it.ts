@@ -246,9 +246,6 @@ export default {
       noAccount: 'Non hai ancora un account?',
       hasAccount: 'Hai già un account?',
       backToLogin: 'Torna al login',
-      demoBoxTitle: 'Anteprima rapida del Portale Clienti',
-      demoBoxText: 'Esplora subito la dashboard ordini, la timeline dinamica e le ricevute con un account dimostrativo pre-popolato.',
-      demoLoginCta: 'Entra con Account Demo (Marco Rossi)',
       resetSentTitle: 'Controlla la tua casella email',
       resetSentText: 'Se l’indirizzo è registrato, riceverai a breve un link per reimpostare la password.',
       resetDoneTitle: 'Password aggiornata!',
@@ -256,12 +253,11 @@ export default {
       errInvalidCredentials: 'Email o password non corretti. Riprova.',
       errEmailExists: 'Questo indirizzo email è già registrato. Prova ad accedere.',
       errFields: 'Compila tutti i campi obbligatori (password min. 8 caratteri).',
-      errServer: 'Impossibile contattare il server. Puoi usare il pulsante Account Demo qui sotto.',
+      errServer: 'Impossibile contattare il server. Riprova più tardi.',
     },
     dashboard: {
       welcome: 'Ciao, {name}',
       title: 'Il mio account',
-      demoBadge: 'Modalità Demo Interattiva',
       logout: 'Esci dall’account',
       tabs: {
         orders: 'I miei ordini',
@@ -315,8 +311,6 @@ export default {
       itemsTitle: 'Articoli nell’ordine',
       notFoundTitle: 'Ordine non trovato',
       notFoundText: 'Questo ordine non esiste oppure non appartiene al tuo account.',
-      demoSimulateBar: 'Modalità Demo: simula l’avanzamento di stato da parte dell’amministratore per vedere la timeline aggiornarsi dal vivo.',
-      demoAdvanceBtn: 'Avanza stato ordine →',
     },
     timeline: {
       title: 'Stato di avanzamento e tracciamento',

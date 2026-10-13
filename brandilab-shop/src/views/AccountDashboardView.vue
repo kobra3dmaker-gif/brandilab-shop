@@ -157,7 +157,6 @@ async function handleLogout() {
           <div>
             <div class="welcome-row">
               <p class="welcome">{{ t('portal.dashboard.welcome', { name: fullName }) }}</p>
-              <span v-if="user?.isDemo" class="demo-chip">{{ t('portal.dashboard.demoBadge') }}</span>
             </div>
             <h1 class="hero-title display">{{ t('portal.dashboard.title') }}</h1>
           </div>
@@ -478,15 +477,7 @@ async function handleLogout() {
   color: var(--ink-2);
 }
 
-.demo-chip {
-  padding: 0.15rem 0.55rem;
-  background: var(--blue);
-  color: var(--on-blue);
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
+
 
 .hero-title {
   font-size: clamp(2.1rem, 4.5vw, 3.25rem);

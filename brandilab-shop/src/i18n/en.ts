@@ -246,9 +246,6 @@ const en: typeof it = {
       noAccount: 'Don’t have an account yet?',
       hasAccount: 'Already have an account?',
       backToLogin: 'Back to sign in',
-      demoBoxTitle: 'Quick Customer Portal Preview',
-      demoBoxText: 'Explore the order dashboard, dynamic tracking timeline and receipts right away with a pre-populated demo account.',
-      demoLoginCta: 'Enter with Demo Account (Marco Rossi)',
       resetSentTitle: 'Check your inbox',
       resetSentText: 'If the address is registered, you will shortly receive a link to reset your password.',
       resetDoneTitle: 'Password updated!',
@@ -256,12 +253,11 @@ const en: typeof it = {
       errInvalidCredentials: 'Incorrect email or password. Please try again.',
       errEmailExists: 'This email address is already registered. Try signing in.',
       errFields: 'Please fill in all required fields (password min. 8 characters).',
-      errServer: 'Unable to reach the server. You can use the Demo Account button below.',
+      errServer: 'Unable to reach the server. Please try again later.',
     },
     dashboard: {
       welcome: 'Hello, {name}',
       title: 'My Account',
-      demoBadge: 'Interactive Demo Mode',
       logout: 'Sign out',
       tabs: {
         orders: 'My Orders',
@@ -315,8 +311,6 @@ const en: typeof it = {
       itemsTitle: 'Items in this order',
       notFoundTitle: 'Order not found',
       notFoundText: 'This order does not exist or does not belong to your account.',
-      demoSimulateBar: 'Demo Mode: simulate an order status update by the administrator to watch the timeline advance live.',
-      demoAdvanceBtn: 'Advance order status →',
     },
     timeline: {
       title: 'Order progress & tracking',

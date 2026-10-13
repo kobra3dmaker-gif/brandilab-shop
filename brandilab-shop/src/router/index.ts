@@ -9,7 +9,6 @@ const CheckoutSuccessView = () => import('@/views/CheckoutSuccessView.vue')
 const AuthView = () => import('@/views/AuthView.vue')
 const AccountDashboardView = () => import('@/views/AccountDashboardView.vue')
 const OrderDetailView = () => import('@/views/OrderDetailView.vue')
-const AdminOrdersView = () => import('@/views/AdminOrdersView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -85,16 +84,6 @@ const router = createRouter({
       name: 'order-detail',
       component: OrderDetailView,
       meta: { requiresCustomerAuth: true },
-    },
-    // ── Lightweight Admin Panel (Order Status & Tracking Management) ──
-    {
-      path: '/admin',
-      name: 'admin-orders',
-      component: AdminOrdersView,
-    },
-    {
-      path: '/admin-dashboard',
-      redirect: '/admin',
     },
   ],
   scrollBehavior(to, _from, savedPosition) {

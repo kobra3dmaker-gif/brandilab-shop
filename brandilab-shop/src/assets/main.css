@@ -7,7 +7,7 @@
 /*
  * The theme is set as data-theme="light|dark" on <html> by the inline script in
  * index.html (follows the OS unless the visitor picked one — see composables/useTheme.ts).
- * `.theme-light` forces the light palette on a subtree (used by the admin dashboard).
+ * `.theme-light` forces the light palette on a subtree.
  */
 :root,
 .theme-light {
@@ -36,7 +36,7 @@
   --tile-dark: #000000;
   --on-tile-dark: #f5f5f7;
 
-  /* Legacy names (admin dashboard and older components) */
+  /* Legacy names (compatibility with older components) */
   --color-primary: var(--ink);
   --color-primary-light: var(--ink-2);
   --color-accent: var(--blue);
@@ -129,7 +129,7 @@
   --font-size-4xl: 2.5rem;
   --font-size-5xl: 3.5rem;
 
-  /* Shape: print has no rounded corners; the admin keeps its small radii */
+  /* Shape tokens */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 10px;

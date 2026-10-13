@@ -9,7 +9,7 @@ type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const { login, loginDemo, register, requestPasswordReset, confirmPasswordReset, loading } = useAuth()
+const { login, register, requestPasswordReset, confirmPasswordReset, loading } = useAuth()
 
 function resolveInitialMode(): AuthMode {
   if (route.name === 'register' || route.query.mode === 'register') return 'register'
@@ -125,17 +125,11 @@ async function onSubmit() {
     resetSuccess.value = true
   }
 }
-
-function handleDemoLogin() {
-  loginDemo()
-  const redirectTarget = typeof route.query.redirect === 'string' ? route.query.redirect : '/account'
-  router.push(redirectTarget)
-}
 </script>
 
 <template>
   <main class="auth-page">
-    <div class="container auth-grid">
+    <div class="container auth-container">
       <!-- Form Card -->
       <section class="auth-card">
         <header class="auth-head">
@@ -259,24 +253,6 @@ function handleDemoLogin() {
           </div>
         </form>
       </section>
-
-      <!-- Demo Preview Panel -->
-      <aside class="demo-panel">
-        <div class="demo-badge">DEMO</div>
-        <h2 class="demo-title">{{ t('portal.auth.demoBoxTitle') }}</h2>
-        <p class="demo-desc">{{ t('portal.auth.demoBoxText') }}</p>
-        <ul class="demo-features">
-          <li>✓ Storico ordini con filtri e ricerca stile Amazon</li>
-          <li>✓ Timeline dinamica interattiva (Ricevuto → Stampa 3D → Spedito → Consegnato)</li>
-          <li>✓ Indirizzi storicizzati e stampa ricevuta fiscale</li>
-        </ul>
-        <button type="button" class="btn btn-ink demo-btn" @click="handleDemoLogin">
-          {{ t('portal.auth.demoLoginCta') }}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </button>
-      </aside>
     </div>
   </main>
 </template>
@@ -288,18 +264,15 @@ function handleDemoLogin() {
   min-height: calc(100vh - var(--navbar-height));
 }
 
-.auth-grid {
-  max-width: 1020px;
-  display: grid;
-  grid-template-columns: 1.2fr 0.85fr;
-  gap: 2rem;
-  align-items: start;
+.auth-container {
+  max-width: 540px;
+  margin: 0 auto;
 }
 
 .auth-card {
   background: var(--paper);
   border: 2px solid var(--rule);
-  padding: clamp(1.5rem, 4vw, 2.75rem);
+  padding: clamp(1.75rem, 5vw, 2.75rem);
 }
 
 .eyebrow {
@@ -425,54 +398,7 @@ function handleDemoLogin() {
   gap: 1rem;
 }
 
-.demo-panel {
-  background: var(--paper);
-  border: 2px solid var(--rule);
-  padding: clamp(1.5rem, 3.5vw, 2.25rem);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.demo-badge {
-  align-self: flex-start;
-  padding: 0.2rem 0.6rem;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.demo-title {
-  font-stretch: var(--semi-wide);
-  font-weight: 850;
-  font-size: 1.35rem;
-}
-
-.demo-desc {
-  color: var(--ink-2);
-  font-size: 0.94rem;
-}
-
-.demo-features {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.88rem;
-  font-weight: 650;
-  padding: 0.5rem 0;
-}
-
-.demo-btn {
-  width: 100%;
-}
-
-@media (max-width: 860px) {
-  .auth-grid {
-    grid-template-columns: 1fr;
-  }
-
+@media (max-width: 640px) {
   .row-2 {
     grid-template-columns: 1fr;
   }
