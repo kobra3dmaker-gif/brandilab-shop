@@ -36,6 +36,7 @@ const marketplaces = [
 
         <nav class="col" :aria-label="t('footer.supportTitle')">
           <h2 class="col-title">{{ t('footer.supportTitle') }}</h2>
+          <RouterLink to="/account">{{ t('nav.myOrders') }}</RouterLink>
           <RouterLink :to="{ path: '/contact', hash: '#faq' }">{{ t('footer.faq') }}</RouterLink>
           <RouterLink :to="{ path: '/contact', hash: '#faq' }">{{ t('footer.shipping') }}</RouterLink>
           <RouterLink to="/contact">{{ t('nav.contact') }}</RouterLink>
